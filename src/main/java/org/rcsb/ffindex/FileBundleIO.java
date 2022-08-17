@@ -2,6 +2,8 @@ package org.rcsb.ffindex;
 
 import org.rcsb.ffindex.impl.AppendableFileBundle;
 import org.rcsb.ffindex.impl.IndexEntryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,6 +21,8 @@ import static org.rcsb.ffindex.FileBundle.INDEX_ENTRY_DELIMITER;
  * IO operations on a bunch of files. FFindex-style.
  */
 public class FileBundleIO {
+    private static final Logger logger = LoggerFactory.getLogger(FileBundleIO.class);
+
     /**
      * Opens a handle to a file bundle. Use a try-with-resource block for this like with other IO operations.
      * The referenced files are not required to exist beforehand. Use them also to create a new FFindex bundle.
@@ -29,12 +33,15 @@ public class FileBundleIO {
      */
     public static FileBundle open(Path dataPath, Path indexPath) throws IOException {
         // TODO options, like read-only mode
+        long start = System.nanoTime();
         RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
         // need file channel because RandomAccessFile only supports offsets of type int
         FileChannel dataFileChannel = dataFile.getChannel();
         FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
         Map<String, IndexEntry> entries = parseEntryIndex(indexPath);
-        return new AppendableFileBundle(dataFile, dataFileChannel, indexFileChannel, entries);
+        FileBundle out = new AppendableFileBundle(dataFile, dataFileChannel, indexFileChannel, entries);
+        logger.debug("Initialized bundle ({}, {}) in {} ms", dataPath, indexPath, (int) ((System.nanoTime() - start) * 0.001 * 0.001));
+        return out;
     }
 
     private static Map<String, IndexEntry> parseEntryIndex(Path indexPath) throws IOException {

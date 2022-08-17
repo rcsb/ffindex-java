@@ -9,14 +9,14 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 class ConversionsImpl implements Conversions {
-    private final DataFile byteBufferDataFile;
+    private final DataFile dataFile;
 
-    public ConversionsImpl(DataFile byteBufferDataFile) {
-        this.byteBufferDataFile = byteBufferDataFile;
+    public ConversionsImpl(DataFile dataFile) {
+        this.dataFile = dataFile;
     }
 
     public byte[] byteArray() {
-        ByteBuffer byteBuffer = byteBufferDataFile.getByteBuffer();
+        ByteBuffer byteBuffer = dataFile.getByteBuffer();
         byteBuffer.rewind();
         byte[] out = new byte[byteBuffer.remaining()];
         byteBuffer.get(out);
