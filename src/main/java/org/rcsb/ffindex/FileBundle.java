@@ -16,6 +16,19 @@ import java.util.stream.Stream;
  */
 public interface FileBundle extends Closeable {
     /**
+     * How files are terminated in the data file.
+     */
+    String FILE_END = "\n\u0000";
+    /**
+     * Buffer that can be used to terminate files.
+     */
+    ByteBuffer FILE_END_BUFFER = ByteBuffer.wrap(FILE_END.getBytes(StandardCharsets.UTF_8));
+    /**
+     * Delimiter in index entry lines.
+     */
+    String INDEX_ENTRY_DELIMITER = "\t";
+
+    /**
      * Read a specific file, identified by its filename.
      * @param filename the name of this file
      * @return the requested file

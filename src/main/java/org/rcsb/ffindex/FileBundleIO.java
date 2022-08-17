@@ -1,9 +1,19 @@
 package org.rcsb.ffindex;
 
 import org.rcsb.ffindex.impl.AppendableFileBundle;
+import org.rcsb.ffindex.impl.IndexEntryImpl;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.rcsb.ffindex.FileBundle.INDEX_ENTRY_DELIMITER;
 
 /**
  * IO operations on a bunch of files. FFindex-style.
@@ -18,6 +28,23 @@ public class FileBundleIO {
      * @throws IOException e.g. upon missing read permissions
      */
     public static FileBundle open(Path dataPath, Path indexPath) throws IOException {
-        return new AppendableFileBundle(dataPath, indexPath);
+        // TODO options, like read-only mode
+        RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
+        // need file channel because RandomAccessFile only supports offsets of type int
+        FileChannel dataFileChannel = dataFile.getChannel();
+        FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
+        Map<String, IndexEntry> entries = parseEntryIndex(indexPath);
+        return new AppendableFileBundle(dataFile, dataFileChannel, indexFileChannel, entries);
+    }
+
+    private static Map<String, IndexEntry> parseEntryIndex(Path indexPath) throws IOException {
+        List<String> lines = Files.readAllLines(indexPath);
+        Map<String, IndexEntry> out = new HashMap<>();
+        for (String line : lines) {
+            String[] split = line.split(INDEX_ENTRY_DELIMITER);
+            IndexEntry entry = new IndexEntryImpl(split[0], Long.parseLong(split[1]), Integer.parseInt(split[2]));
+            out.put(entry.getName(), entry);
+        }
+        return out;
     }
 }

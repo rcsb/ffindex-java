@@ -1,6 +1,8 @@
 package org.rcsb.ffindex.impl;
 
-class IndexEntry {
+import org.rcsb.ffindex.IndexEntry;
+
+public class IndexEntryImpl implements IndexEntry {
     // the filename reported for this entry
     private final String name;
     // the start position
@@ -8,20 +10,23 @@ class IndexEntry {
     // the length of this file
     private final int length;
 
-    public IndexEntry(String name, long offset, int length) {
+    public IndexEntryImpl(String name, long offset, int length) {
         this.name = name;
         this.offset = offset;
         this.length = length;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public long getOffset() {
         return offset;
     }
 
+    @Override
     public int getLength() {
         return length;
     }
