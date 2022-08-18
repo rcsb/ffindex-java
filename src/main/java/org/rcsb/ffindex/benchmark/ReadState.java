@@ -2,8 +2,6 @@ package org.rcsb.ffindex.benchmark;
 
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
-import org.rcsb.ffindex.FileBundle;
-import org.rcsb.ffindex.FileBundleIO;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,7 +20,6 @@ public class ReadState {
     final Path indexIn;
     final List<Path> files;
     final List<String> filenames;
-    FileBundle fileBundle;
 
     @SuppressWarnings("unchecked")
     public ReadState() {
@@ -33,12 +30,13 @@ public class ReadState {
         Object[] data = initLists();
         this.files = (List<Path>) data[0];
         this.filenames = (List<String>) data[1];
-        this.fileBundle = initFileBundle();
     }
 
     private Object[] initLists() {
         try {
-            List<Path> files = Files.list(sourceDirectory).limit(TO_READ).collect(Collectors.toList());
+            List<Path> allFiles = Files.list(sourceDirectory).collect(Collectors.toList());
+            Collections.shuffle(allFiles);
+            List<Path> files = allFiles.stream().limit(TO_READ).collect(Collectors.toList());
             List<String> filenames = files.stream()
                     .map(sourceDirectory::relativize)
                     .map(Object::toString)
@@ -47,14 +45,6 @@ public class ReadState {
         } catch (IOException e) {
             System.err.println("Couldn't initialize benchmark state");
             return new Object[] { Collections.emptyList(), Collections.emptyList() };
-        }
-    }
-
-    private FileBundle initFileBundle() {
-        try {
-            return FileBundleIO.open(dataIn, indexIn);
-        } catch (IOException e) {
-            return null;
         }
     }
 }

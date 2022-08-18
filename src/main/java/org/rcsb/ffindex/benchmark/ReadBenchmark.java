@@ -12,16 +12,29 @@ import org.rcsb.ffindex.FileBundle;
 import org.rcsb.ffindex.FileBundleIO;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * This is tailored benchmark for strucmotif-search. Expects 'production' data in the right locations.
  */
 public class ReadBenchmark {
+    private static final FileBundle fileBundle;
+
+    static {
+        // this is pretty dirty...
+        try {
+            fileBundle = FileBundleIO.open(Paths.get("/opt/data/renumbered.data"), Paths.get("/opt/data/renumbered.ffindex"));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     @Benchmark
     public void readFileSystem(Blackhole blackhole, ReadState state) throws IOException {
         for (Path path : state.files) {
-            blackhole.consume(BenchmarkHelper.getBytes(path));
+            blackhole.consume(BenchmarkHelper.hashContents(path));
         }
     }
 
@@ -29,17 +42,15 @@ public class ReadBenchmark {
     public void readFFindex(Blackhole blackhole, ReadState state) throws IOException {
         try (FileBundle fileBundle = FileBundleIO.open(state.dataIn, state.indexIn)) {
             for (String filename : state.filenames) {
-                blackhole.consume(fileBundle.readFile(filename));
+                blackhole.consume(BenchmarkHelper.hashContents(fileBundle.readFile(filename)));
             }
         }
     }
 
     @Benchmark
     public void readFFindexInitialized(Blackhole blackhole, ReadState state) throws IOException {
-        try (FileBundle fileBundle = state.fileBundle) { // TODO this is pretty bad
-            for (String filename : state.filenames) {
-                blackhole.consume(fileBundle.readFile(filename));
-            }
+        for (String filename : state.filenames) {
+            blackhole.consume(BenchmarkHelper.hashContents(fileBundle.readFile(filename)));
         }
     }
 

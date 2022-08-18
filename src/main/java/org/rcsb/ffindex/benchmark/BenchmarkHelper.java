@@ -1,10 +1,13 @@
 package org.rcsb.ffindex.benchmark;
 
+import org.rcsb.ffindex.DataFile;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 /**
  * Utility functions for benchmarking.
@@ -31,5 +34,13 @@ class BenchmarkHelper {
         inputStream.close();
 
         return byteArray;
+    }
+
+    public static int hashContents(Path path) throws IOException {
+        return Arrays.hashCode(getBytes(path));
+    }
+
+    public static int hashContents(DataFile dataFile) {
+        return Arrays.hashCode(dataFile.to().byteArray());
     }
 }
