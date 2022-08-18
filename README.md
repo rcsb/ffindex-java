@@ -1,7 +1,7 @@
 # Overview
 
 FFindex is a very simple index/database for huge amounts of small files. The files are stored concatenated in one big 
-data file, seperated by '\0'. A second file contains a plain text index, giving name, offset and length of the small 
+data file, seperated by `\0`. A second file contains a plain text index, giving name, offset and length of the small 
 files.
 
 # Performance
