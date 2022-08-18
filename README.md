@@ -6,7 +6,8 @@ files.
 
 # Performance
 
-Performance was measured on a collection of 190k BinaryCIF files (stored as `.bcif.gz`).
+Performance was measured on a collection of 190k BinaryCIF files (stored as `.bcif.gz`). Multi-threaded operations could
+use up to 12 cores.
 
 ## Read Times (JMH)
 | Approach | read 1,000 random files [ms] |

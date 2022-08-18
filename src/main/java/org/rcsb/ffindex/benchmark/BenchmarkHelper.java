@@ -12,6 +12,7 @@ import java.util.Arrays;
 /**
  * Utility functions for benchmarking.
  */
+// TODO move benchmark stuff into dedicated module?
 class BenchmarkHelper {
     /**
      * Get the contents of a file.

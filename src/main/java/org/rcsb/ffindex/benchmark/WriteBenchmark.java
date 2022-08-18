@@ -57,10 +57,10 @@ public class WriteBenchmark {
 
     private int addDirectory(FileBundle fileBundle, Path sourceDirectory, boolean parallel) throws IOException {
         AtomicInteger counter = new AtomicInteger(0);
-        Stream<Path> files = Files.list(sourceDirectory);
+        Stream<Path> files = Files.walk(sourceDirectory);
         if (parallel) files = files.parallel();
 
-        files.forEach(p -> {
+        files.filter(Files::isRegularFile).forEach(p -> {
             try {
                 Path relative = sourceDirectory.relativize(p);
                 counter.incrementAndGet();
