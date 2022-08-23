@@ -2,6 +2,7 @@ package org.rcsb.ffindex;
 
 import org.rcsb.ffindex.impl.AppendableFileBundle;
 import org.rcsb.ffindex.impl.IndexEntryImpl;
+import org.rcsb.ffindex.impl.ReadOnlyFileBundle;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,17 +25,49 @@ public class FileBundleIO {
      * The referenced files are not required to exist beforehand. Use them also to create a new FFindex bundle.
      * @param dataPath the location of the data file
      * @param indexPath the location of the corresponding index file
-     * @return a {@link FileBundle}, which supports read and limited write operations
+     * @return the {@link ModeStep}, which determines read-only or appendable mode
      * @throws IOException e.g. upon missing read permissions
      */
-    public static FileBundle open(Path dataPath, Path indexPath) throws IOException {
-        // TODO options, like read-only mode
-        RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
-        // need file channel because RandomAccessFile only supports offsets of type int
-        FileChannel dataFileChannel = dataFile.getChannel();
-        FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
-        Map<String, IndexEntry> entries = parseEntryIndex(indexPath);
-        return new AppendableFileBundle(dataFile, dataFileChannel, indexFileChannel, entries);
+    public static ModeStep openBundle(Path dataPath, Path indexPath) throws IOException {
+        return new ModeStep(dataPath, indexPath, parseEntryIndex(indexPath));
+    }
+
+    /**
+     * Controls supported operations for the bundle.
+     */
+    public static class ModeStep {
+        private final Path dataPath;
+        private final Path indexPath;
+        private final Map<String, IndexEntry> entries;
+
+        private ModeStep(Path dataPath, Path indexPath, Map<String, IndexEntry> entries) {
+            this.dataPath = dataPath;
+            this.indexPath = indexPath;
+            this.entries = entries;
+        }
+
+        /**
+         * Create a read-only bundle.
+         * @return a bundle that is read-only
+         * @throws IOException reading failed
+         */
+        public ReadOnlyFileBundle inReadOnlyMode() throws IOException {
+            RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "r");
+            FileChannel dataFileChannel = dataFile.getChannel();
+            return new ReadOnlyFileBundle(dataFile, dataFileChannel, entries);
+        }
+
+        /**
+         * Create an appendable bundle.
+         * @return a bundle that supports write operations
+         * @throws IOException reading failed
+         */
+        public AppendableFileBundle inAppendableMode() throws IOException {
+            RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
+            FileChannel dataFileChannel = dataFile.getChannel();
+            FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
+            return new AppendableFileBundle(dataFile, dataFileChannel, indexFileChannel, entries);
+        }
     }
 
     private static Map<String, IndexEntry> parseEntryIndex(Path indexPath) throws IOException {

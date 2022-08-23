@@ -25,7 +25,7 @@ public class ReadBenchmark {
     static {
         // this is pretty dirty...
         try {
-            fileBundle = FileBundleIO.open(Paths.get("/opt/data/renumbered.data"), Paths.get("/opt/data/renumbered.ffindex"));
+            fileBundle = FileBundleIO.openBundle(Paths.get("/opt/data/renumbered.data"), Paths.get("/opt/data/renumbered.ffindex")).inReadOnlyMode();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -40,7 +40,7 @@ public class ReadBenchmark {
 
     @Benchmark
     public void readFFindex(Blackhole blackhole, ReadState state) throws IOException {
-        try (FileBundle fileBundle = FileBundleIO.open(state.dataIn, state.indexIn)) {
+        try (FileBundle fileBundle = FileBundleIO.openBundle(state.dataIn, state.indexIn).inReadOnlyMode()) {
             for (String filename : state.filenames) {
                 blackhole.consume(BenchmarkHelper.hashContents(fileBundle.readFile(filename)));
             }

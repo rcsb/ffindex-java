@@ -8,8 +8,8 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
-import org.rcsb.ffindex.FileBundle;
 import org.rcsb.ffindex.FileBundleIO;
+import org.rcsb.ffindex.impl.AppendableFileBundle;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -43,19 +43,19 @@ public class WriteBenchmark {
 
     @Benchmark
     public void writeFFindexSingleThreaded(Blackhole blackhole, WriteState state) throws IOException {
-        try (FileBundle fileBundle = FileBundleIO.open(state.dataOut, state.indexOut)) {
+        try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(state.dataOut, state.indexOut).inAppendableMode()) {
             blackhole.consume(addDirectory(fileBundle, state.sourceDirectory, false));
         }
     }
 
     @Benchmark
     public void writeFFindexMultiThreaded(Blackhole blackhole, WriteState state) throws IOException {
-        try (FileBundle fileBundle = FileBundleIO.open(state.dataOut, state.indexOut)) {
+        try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(state.dataOut, state.indexOut).inAppendableMode()) {
             blackhole.consume(addDirectory(fileBundle, state.sourceDirectory, true));
         }
     }
 
-    private int addDirectory(FileBundle fileBundle, Path sourceDirectory, boolean parallel) throws IOException {
+    private int addDirectory(AppendableFileBundle fileBundle, Path sourceDirectory, boolean parallel) throws IOException {
         AtomicInteger counter = new AtomicInteger(0);
         Stream<Path> files = Files.walk(sourceDirectory);
         if (parallel) files = files.parallel();

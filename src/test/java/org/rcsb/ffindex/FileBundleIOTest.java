@@ -1,6 +1,7 @@
 package org.rcsb.ffindex;
 
 import org.junit.jupiter.api.Test;
+import org.rcsb.ffindex.impl.AppendableFileBundle;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +19,7 @@ class FileBundleIOTest {
         Path dataPath = resourcePath.resolve("test.data");
         Path indexPath = resourcePath.resolve("test.ffindex");
 
-        try (FileBundle fileBundle = FileBundleIO.open(dataPath, indexPath)) {
+        try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
             assertEquals("a", fileBundle.readFile("a").to().string());
             assertEquals("bb", fileBundle.readFile("b").to().string());
             assertEquals("cc", fileBundle.readFile("c").to().string());
@@ -31,7 +32,7 @@ class FileBundleIOTest {
         Path dataPath = Files.createTempFile("file-bundle-test", "nope.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "nope.ffindex");
 
-        try (FileBundle fileBundle = FileBundleIO.open(dataPath, indexPath)) {
+        try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
             assertFalse(fileBundle.containsFile("a"));
             assertEquals(0, fileBundle.size());
             assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
@@ -43,7 +44,7 @@ class FileBundleIOTest {
         Path dataPath = Files.createTempFile("file-bundle-test", "test.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "test.ffindex");
 
-        try (FileBundle fileBundle = FileBundleIO.open(dataPath, indexPath)) {
+        try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inAppendableMode()) {
             fileBundle.writeFile("a", "a".getBytes(StandardCharsets.UTF_8));
             fileBundle.writeFile("b", "bb".getBytes(StandardCharsets.UTF_8));
             fileBundle.writeFile("c", "cc".getBytes(StandardCharsets.UTF_8));
@@ -62,7 +63,7 @@ class FileBundleIOTest {
         Path dataPath = resourcePath.resolve("test.data");
         Path indexPath = resourcePath.resolve("test.ffindex");
 
-        try (FileBundle fileBundle = FileBundleIO.open(dataPath, indexPath)) {
+        try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inAppendableMode()) {
             assertThrows(IllegalStateException.class, () -> fileBundle.writeFile("a", "reject"));
         }
     }

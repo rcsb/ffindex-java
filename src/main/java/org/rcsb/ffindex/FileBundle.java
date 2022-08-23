@@ -44,15 +44,6 @@ public interface FileBundle extends Closeable {
     boolean containsFile(String filename);
 
     /**
-     * Add a new file to this bundle.
-     * @param filename the name of this file
-     * @param byteBuffer the content of this file
-     * @return the new offset (i.e., the position in the data file where the next file will be written)
-     * @throws IOException file already exists or writing failed
-     */
-    long writeFile(String filename, ByteBuffer byteBuffer) throws IOException;
-
-    /**
      * The number of files in this bundle.
      * @return an int
      */
@@ -63,28 +54,4 @@ public interface FileBundle extends Closeable {
      * @return all filenames
      */
     Stream<String> filenames();
-
-    /**
-     * Add a new file to this bundle.
-     * @param filename the name of this file
-     * @param content the content of this file, as String
-     * @return the new offset (i.e., the position in the data file where the next file will be written)
-     * @throws IOException file already exists or writing failed
-     * @see #writeFile(String, ByteBuffer)
-     */
-    default long writeFile(String filename, String content) throws IOException {
-        return writeFile(filename, content.getBytes(StandardCharsets.UTF_8));
-    }
-
-    /**
-     * Add a new file to this bundle.
-     * @param filename the name of this file
-     * @param content the content of this file, as byte array
-     * @return the new offset (i.e., the position in the data file where the next file will be written)
-     * @throws IOException file already exists or writing failed
-     * @see #writeFile(String, ByteBuffer)
-     */
-    default long writeFile(String filename, byte[] content) throws IOException {
-        return writeFile(filename, ByteBuffer.wrap(content));
-    }
 }
