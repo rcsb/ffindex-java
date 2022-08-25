@@ -28,9 +28,23 @@ class FileBundleIOTest {
     }
 
     @Test
-    public void whenReadingNothing_thenEmptyStatusReported() throws IOException {
+    public void whenReadingEmptyFile_thenEmptyStatusReported() throws IOException {
         Path dataPath = Files.createTempFile("file-bundle-test", "nope.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "nope.ffindex");
+
+        try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
+            assertFalse(fileBundle.containsFile("a"));
+            assertEquals(0, fileBundle.size());
+            assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
+        }
+    }
+
+    @Test
+    public void whenReadingNonExistentFile_thenEmptyStatusReported() throws IOException {
+        Path dataPath = Files.createTempFile("file-bundle-test", "nope.data");
+        Path indexPath = Files.createTempFile("file-bundle-test", "nope.ffindex");
+        Files.deleteIfExists(dataPath);
+        Files.deleteIfExists(indexPath);
 
         try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
             assertFalse(fileBundle.containsFile("a"));

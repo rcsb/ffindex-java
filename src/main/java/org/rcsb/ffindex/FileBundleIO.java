@@ -29,7 +29,23 @@ public class FileBundleIO {
      * @throws IOException e.g. upon missing read permissions
      */
     public static ModeStep openBundle(Path dataPath, Path indexPath) throws IOException {
+        ensureFilesExist(dataPath, indexPath);
         return new ModeStep(dataPath, indexPath, parseEntryIndex(indexPath));
+    }
+
+    /**
+     * It's OK to open a bundle without the files existing yet. If that's the case: create data and index file.
+     * @param paths any number of paths
+     * @throws IOException file creation failed
+     */
+    private static void ensureFilesExist(Path... paths) throws IOException {
+        for (Path p : paths) {
+            if (Files.exists(p)) {
+                continue;
+            }
+
+            Files.createFile(p);
+        }
     }
 
     /**
