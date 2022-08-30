@@ -17,7 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * This is tailored benchmark for strucmotif-search. Expects 'production' data in the right locations.
+ * This is tailored benchmark for ffindex-java. Expects 'production' data in the right locations.
  */
 public class ReadBenchmark {
     private static final FileBundle fileBundle;
