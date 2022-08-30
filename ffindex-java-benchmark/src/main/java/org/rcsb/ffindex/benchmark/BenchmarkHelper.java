@@ -12,7 +12,6 @@ import java.util.Arrays;
 /**
  * Utility functions for benchmarking.
  */
-// TODO move benchmark stuff into dedicated module?
 class BenchmarkHelper {
     /**
      * Get the contents of a file.
@@ -37,11 +36,11 @@ class BenchmarkHelper {
         return byteArray;
     }
 
-    public static int hashContents(Path path) throws IOException {
+    static int hashContents(Path path) throws IOException {
         return Arrays.hashCode(getBytes(path));
     }
 
-    public static int hashContents(DataFile dataFile) {
+    static int hashContents(DataFile dataFile) {
         return Arrays.hashCode(dataFile.to().byteArray());
     }
 }

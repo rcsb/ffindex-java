@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
- * This is tailored benchmark for strucmotif-search. Expects 'production' data in the right locations. pigz must be
+ * This is tailored benchmark for ffindex-java. Expects 'production' data in the right locations. pigz must be
  * installed.
  */
 public class WriteBenchmark {
