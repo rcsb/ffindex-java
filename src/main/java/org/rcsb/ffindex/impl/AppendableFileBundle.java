@@ -114,7 +114,7 @@ public class AppendableFileBundle implements FileBundle {
     }
 
     @Override
-    public int size() {
+    public int fileCount() {
         return entries.size();
     }
 

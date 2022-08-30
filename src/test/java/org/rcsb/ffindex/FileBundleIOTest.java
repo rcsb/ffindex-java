@@ -34,7 +34,7 @@ class FileBundleIOTest {
 
         try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
             assertFalse(fileBundle.containsFile("a"));
-            assertEquals(0, fileBundle.size());
+            assertEquals(0, fileBundle.fileCount());
             assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
         }
     }
@@ -48,7 +48,7 @@ class FileBundleIOTest {
 
         try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
             assertFalse(fileBundle.containsFile("a"));
-            assertEquals(0, fileBundle.size());
+            assertEquals(0, fileBundle.fileCount());
             assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
         }
     }

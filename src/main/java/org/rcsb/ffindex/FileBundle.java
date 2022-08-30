@@ -47,7 +47,7 @@ public interface FileBundle extends Closeable {
      * The number of files in this bundle.
      * @return an int
      */
-    int size();
+    int fileCount();
 
     /**
      * A {@link Stream} over all filenames that are registered in this bundle.

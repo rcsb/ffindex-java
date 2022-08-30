@@ -32,7 +32,28 @@ use up to 12 cores.
 | tar + gzip | 3.5 |
 | FFindex-java | 3.4 GB (data), 6.0 MB (index) |
 
-Last one seems fishy, but maybe it's the absence of metadata.
+# Usage
+FFindex-java provides access to a "file bundle", i.e. a pair of a FFindex data file and an index file.
+
+## Read-Only Bundles
+
+Open a file bundle using:
+```java
+FileBundle readOnly = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode();
+```
+
+Bundles provide some information about the content of a bundle (like the number of files and the names of registered files).
+Read individual files by invoking `#readFile(String filename)`.
+All data read is returned as `ByteBuffer`.
+
+## Appendable Bundles
+
+```java
+FileBundle appendable = FileBundleIO.openBundle(dataPath, indexPath).inAppendableMode();
+```
+
+Appendable bundles behave like read-only bundles but also provide several methods to write data using e.g. `#writeFile(String filename, byte[] content)`.
+All data to write should be provided as `ByteBuffer`, if possible.
 
 # Details & Limitations
 No guarantees are made that files produced by this project are interoperable with the original FFindex files or 
