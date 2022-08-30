@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
@@ -83,7 +84,20 @@ public class AppendableFileBundle implements FileBundle {
      * @see #writeFile(String, ByteBuffer)
      */
     public long writeFile(String filename, String content) throws IOException {
-        return writeFile(filename, content.getBytes(StandardCharsets.UTF_8));
+        return writeFile(filename, content, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Add a new file to this bundle.
+     * @param filename the name of this file
+     * @param content the content of this file, as String
+     * @param charset the charset to use
+     * @return the new offset (i.e., the position in the data file where the next file will be written)
+     * @throws IOException file already exists or writing failed
+     * @see #writeFile(String, ByteBuffer)
+     */
+    public long writeFile(String filename, String content, Charset charset) throws IOException {
+        return writeFile(filename, content.getBytes(charset));
     }
 
     /**
