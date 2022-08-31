@@ -1,10 +1,9 @@
 package org.rcsb.ffindex.benchmark;
 
-import org.rcsb.ffindex.DataFile;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -40,7 +39,7 @@ class BenchmarkHelper {
         return Arrays.hashCode(getBytes(path));
     }
 
-    static int hashContents(DataFile dataFile) {
-        return Arrays.hashCode(dataFile.to().byteArray());
+    static int hashContents(ByteBuffer byteBuffer) {
+        return Arrays.hashCode(byteBuffer.array());
     }
 }

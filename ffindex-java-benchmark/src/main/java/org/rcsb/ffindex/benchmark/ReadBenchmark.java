@@ -8,8 +8,8 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
-import org.rcsb.ffindex.FileBundle;
 import org.rcsb.ffindex.FileBundleIO;
+import org.rcsb.ffindex.ReadableFileBundle;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -20,7 +20,7 @@ import java.nio.file.Paths;
  * This is tailored benchmark for ffindex-java. Expects 'production' data in the right locations.
  */
 public class ReadBenchmark {
-    private static final FileBundle fileBundle;
+    private static final ReadableFileBundle fileBundle;
 
     static {
         // this is pretty dirty...
@@ -40,7 +40,7 @@ public class ReadBenchmark {
 
     @Benchmark
     public void readFFindex(Blackhole blackhole, ReadState state) throws IOException {
-        try (FileBundle fileBundle = FileBundleIO.openBundle(state.dataIn, state.indexIn).inReadOnlyMode()) {
+        try (ReadableFileBundle fileBundle = FileBundleIO.openBundle(state.dataIn, state.indexIn).inReadOnlyMode()) {
             for (String filename : state.filenames) {
                 blackhole.consume(BenchmarkHelper.hashContents(fileBundle.readFile(filename)));
             }
