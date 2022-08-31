@@ -39,7 +39,7 @@ FFindex-java provides access to a "file bundle", i.e. a pair of a FFindex data f
 
 Open a file bundle using:
 ```java
-FileBundle readOnly = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode();
+ReadableFileBundle readable = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode();
 ```
 
 Bundles provide some information about the content of a bundle (like the number of files and the names of registered files).
@@ -49,10 +49,10 @@ All data read is returned as `ByteBuffer`.
 ## Appendable Bundles
 
 ```java
-FileBundle appendable = FileBundleIO.openBundle(dataPath, indexPath).inAppendableMode();
+WritableFileBundle writeable = FileBundleIO.openBundle(dataPath, indexPath).inWriteOnlyMode();
 ```
 
-Appendable bundles behave like read-only bundles but also provide several methods to write data using e.g. `#writeFile(String filename, byte[] content)`.
+Writable bundles provide several methods to write data using e.g. `#writeFile(String filename, byte[] content)`.
 All data to write should be provided as `ByteBuffer`, if possible.
 
 # Details & Limitations
