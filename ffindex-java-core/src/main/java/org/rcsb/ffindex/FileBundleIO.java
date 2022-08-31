@@ -1,7 +1,7 @@
 package org.rcsb.ffindex;
 
-import org.rcsb.ffindex.impl.AppendableFileBundle;
-import org.rcsb.ffindex.impl.IndexEntryImpl;
+import org.rcsb.ffindex.impl.Entries;
+import org.rcsb.ffindex.impl.WriteOnlyFileBundle;
 import org.rcsb.ffindex.impl.ReadOnlyFileBundle;
 
 import java.io.FileOutputStream;
@@ -10,11 +10,6 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.rcsb.ffindex.FileBundle.INDEX_ENTRY_DELIMITER;
 
 /**
  * IO operations on a bunch of files. FFindex-style.
@@ -25,27 +20,11 @@ public class FileBundleIO {
      * The referenced files are not required to exist beforehand. Use them also to create a new FFindex bundle.
      * @param dataPath the location of the data file
      * @param indexPath the location of the corresponding index file
-     * @return the {@link ModeStep}, which determines read-only or appendable mode
+     * @return the {@link ModeStep}, which determines read-only or write-only mode
      * @throws IOException e.g. upon missing read permissions
      */
     public static ModeStep openBundle(Path dataPath, Path indexPath) throws IOException {
-        ensureFilesExist(dataPath, indexPath);
-        return new ModeStep(dataPath, indexPath, parseEntryIndex(indexPath));
-    }
-
-    /**
-     * It's OK to open a bundle without the files existing yet. If that's the case: create data and index file.
-     * @param paths any number of paths
-     * @throws IOException file creation failed
-     */
-    private static void ensureFilesExist(Path... paths) throws IOException {
-        for (Path p : paths) {
-            if (Files.exists(p)) {
-                continue;
-            }
-
-            Files.createFile(p);
-        }
+        return new ModeStep(dataPath, indexPath);
     }
 
     /**
@@ -54,12 +33,10 @@ public class FileBundleIO {
     public static class ModeStep {
         private final Path dataPath;
         private final Path indexPath;
-        private final Map<String, IndexEntry> entries;
 
-        private ModeStep(Path dataPath, Path indexPath, Map<String, IndexEntry> entries) {
+        private ModeStep(Path dataPath, Path indexPath) {
             this.dataPath = dataPath;
             this.indexPath = indexPath;
-            this.entries = entries;
         }
 
         /**
@@ -70,7 +47,7 @@ public class FileBundleIO {
         public ReadOnlyFileBundle inReadOnlyMode() throws IOException {
             RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "r");
             FileChannel dataFileChannel = dataFile.getChannel();
-            return new ReadOnlyFileBundle(dataFile, dataFileChannel, entries);
+            return new ReadOnlyFileBundle(dataFile, dataFileChannel, Entries.of(indexPath));
         }
 
         /**
@@ -78,22 +55,23 @@ public class FileBundleIO {
          * @return a bundle that supports write operations
          * @throws IOException reading failed
          */
-        public AppendableFileBundle inAppendableMode() throws IOException {
+        public WriteOnlyFileBundle inWriteOnlyMode() throws IOException {
+            createFiles(dataPath, indexPath);
             RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
             FileChannel dataFileChannel = dataFile.getChannel();
             FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
-            return new AppendableFileBundle(dataFile, dataFileChannel, indexFileChannel, entries);
+            return new WriteOnlyFileBundle(dataFile, dataFileChannel, indexFileChannel);
         }
-    }
 
-    private static Map<String, IndexEntry> parseEntryIndex(Path indexPath) throws IOException {
-        List<String> lines = Files.readAllLines(indexPath);
-        Map<String, IndexEntry> out = new HashMap<>();
-        for (String line : lines) {
-            String[] split = line.split(INDEX_ENTRY_DELIMITER);
-            IndexEntry entry = new IndexEntryImpl(split[0], Long.parseLong(split[1]), Integer.parseInt(split[2]));
-            out.put(entry.getName(), entry);
+        /**
+         * It's OK to open a {@link WritableFileBundle} without the files existing yet. If that's the case: create data and index file.
+         * @param paths any number of paths
+         * @throws IOException file creation failed
+         */
+        private static void createFiles(Path... paths) throws IOException {
+            for (Path p : paths) {
+                Files.createFile(p);
+            }
         }
-        return out;
     }
 }

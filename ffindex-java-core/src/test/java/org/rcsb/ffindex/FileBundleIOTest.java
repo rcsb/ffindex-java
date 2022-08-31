@@ -1,7 +1,6 @@
 package org.rcsb.ffindex;
 
 import org.junit.jupiter.api.Test;
-import org.rcsb.ffindex.impl.AppendableFileBundle;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,11 +18,11 @@ class FileBundleIOTest {
         Path dataPath = resourcePath.resolve("test.data");
         Path indexPath = resourcePath.resolve("test.ffindex");
 
-        try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
-            assertEquals("a", fileBundle.readFile("a").to().string());
-            assertEquals("bb", fileBundle.readFile("b").to().string());
-            assertEquals("cc", fileBundle.readFile("c").to().string());
-            assertEquals("fooo\nfooo", fileBundle.readFile("foo").to().string());
+        try (ReadableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
+            assertEquals("a", Conversions.toString(fileBundle.readFile("a")));
+            assertEquals("bb", Conversions.toString(fileBundle.readFile("b")));
+            assertEquals("cc", Conversions.toString(fileBundle.readFile("c")));
+            assertEquals("fooo\nfooo", Conversions.toString(fileBundle.readFile("foo")));
         }
     }
 
@@ -32,7 +31,7 @@ class FileBundleIOTest {
         Path dataPath = Files.createTempFile("file-bundle-test", "nope.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "nope.ffindex");
 
-        try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
+        try (ReadableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
             assertFalse(fileBundle.containsFile("a"));
             assertEquals(0, fileBundle.fileCount());
             assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
@@ -43,10 +42,8 @@ class FileBundleIOTest {
     public void whenReadingNonExistentFile_thenEmptyStatusReported() throws IOException {
         Path dataPath = Files.createTempFile("file-bundle-test", "nope.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "nope.ffindex");
-        Files.deleteIfExists(dataPath);
-        Files.deleteIfExists(indexPath);
 
-        try (FileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
+        try (ReadableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
             assertFalse(fileBundle.containsFile("a"));
             assertEquals(0, fileBundle.fileCount());
             assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
@@ -57,28 +54,25 @@ class FileBundleIOTest {
     public void whenWritingContent_thenIndexUpdatedAndContentMatches() throws IOException {
         Path dataPath = Files.createTempFile("file-bundle-test", "test.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "test.ffindex");
+        Files.deleteIfExists(dataPath);
+        Files.deleteIfExists(indexPath);
 
-        try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inAppendableMode()) {
-            fileBundle.writeFile("a", "a".getBytes(StandardCharsets.UTF_8));
-            fileBundle.writeFile("b", "bb".getBytes(StandardCharsets.UTF_8));
-            fileBundle.writeFile("c", "cc".getBytes(StandardCharsets.UTF_8));
-            fileBundle.writeFile("foo", "fooo\nfooo".getBytes(StandardCharsets.UTF_8));
+        try (WritableFileBundle writableFileBundle = FileBundleIO.openBundle(dataPath, indexPath).inWriteOnlyMode()) {
+            writableFileBundle.writeFile("a", "a".getBytes(StandardCharsets.UTF_8));
+            writableFileBundle.writeFile("b", "bb".getBytes(StandardCharsets.UTF_8));
+            writableFileBundle.writeFile("c", "cc".getBytes(StandardCharsets.UTF_8));
+            writableFileBundle.writeFile("foo", "fooo\nfooo".getBytes(StandardCharsets.UTF_8));
+            writableFileBundle.close();
 
-            assertArrayEquals(TestHelper.getBytes("data/a"), fileBundle.readFile("a").to().byteArray());
-            assertArrayEquals(TestHelper.getBytes("data/b"), fileBundle.readFile("b").to().byteArray());
-            assertArrayEquals(TestHelper.getBytes("data/c"), fileBundle.readFile("c").to().byteArray());
-            assertArrayEquals(TestHelper.getBytes("data2/foo"), fileBundle.readFile("foo").to().byteArray());
+            try (ReadableFileBundle readableFileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
+                assertArrayEquals(TestHelper.getBytes("data/a"), Conversions.toByteArray(readableFileBundle.readFile("a")));
+                assertArrayEquals(TestHelper.getBytes("data/b"), Conversions.toByteArray(readableFileBundle.readFile("b")));
+                assertArrayEquals(TestHelper.getBytes("data/c"), Conversions.toByteArray(readableFileBundle.readFile("c")));
+                assertArrayEquals(TestHelper.getBytes("data2/foo"), Conversions.toByteArray(readableFileBundle.readFile("foo")));
+            }
         }
-    }
 
-    @Test
-    public void whenWritingDuplicate_thenIllegalStateExceptionThrown() throws IOException {
-        Path resourcePath = Paths.get("src/test/resources/");
-        Path dataPath = resourcePath.resolve("test.data");
-        Path indexPath = resourcePath.resolve("test.ffindex");
-
-        try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inAppendableMode()) {
-            assertThrows(IllegalStateException.class, () -> fileBundle.writeFile("a", "reject"));
-        }
+        Files.deleteIfExists(dataPath);
+        Files.deleteIfExists(indexPath);
     }
 }

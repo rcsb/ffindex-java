@@ -1,43 +1,40 @@
 package org.rcsb.ffindex.impl;
 
-import org.rcsb.ffindex.DataFile;
-import org.rcsb.ffindex.FileBundle;
-import org.rcsb.ffindex.IndexEntry;
+import org.rcsb.ffindex.ReadableFileBundle;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.NoSuchFileException;
-import java.util.Map;
 import java.util.stream.Stream;
 
 /**
  * A bundle that supports only read operations.
  */
-public class ReadOnlyFileBundle implements FileBundle {
+public class ReadOnlyFileBundle implements ReadableFileBundle {
     private final RandomAccessFile dataFile;
     private final FileChannel dataFileChannel;
-    private final Map<String, IndexEntry> entries;
+    private final Entries entries;
 
-    public ReadOnlyFileBundle(RandomAccessFile dataFile, FileChannel dataFileChannel, Map<String, IndexEntry> entries) {
+    public ReadOnlyFileBundle(RandomAccessFile dataFile, FileChannel dataFileChannel, Entries entries) {
         this.dataFile = dataFile;
         this.dataFileChannel = dataFileChannel;
         this.entries = entries;
     }
 
     @Override
-    public DataFile readFile(String filename) throws IOException {
-        if (!containsFile(filename)) {
+    public ByteBuffer readFile(String filename) throws IOException {
+        int index = entries.getIndex(filename);
+        if (index == -1) {
             throw new NoSuchFileException("No file with name '" + filename + "'");
         }
-
-        IndexEntry indexEntry = entries.get(filename);
-        return new ByteBufferDataFile(dataFileChannel.map(FileChannel.MapMode.READ_ONLY, indexEntry.getOffset(), indexEntry.getLength() - 2));
+        return dataFileChannel.map(FileChannel.MapMode.READ_ONLY, entries.getOffset(index), entries.getLength(index) - FILE_END_LENGTH);
     }
 
     @Override
     public boolean containsFile(String filename) {
-        return entries.containsKey(filename);
+        return entries.getIndex(filename) != -1;
     }
 
     @Override
@@ -47,7 +44,7 @@ public class ReadOnlyFileBundle implements FileBundle {
 
     @Override
     public Stream<String> filenames() {
-        return entries.keySet().stream();
+        return entries.getFilenames().stream();
     }
 
     @Override
