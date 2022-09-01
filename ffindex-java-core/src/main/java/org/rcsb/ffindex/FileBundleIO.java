@@ -23,9 +23,8 @@ public class FileBundleIO {
      * @param dataPath the location of the data file
      * @param indexPath the location of the corresponding index file
      * @return the {@link ModeStep}, which determines read-only or write-only mode
-     * @throws IOException e.g. upon missing read permissions
      */
-    public static ModeStep openBundle(Path dataPath, Path indexPath) throws IOException {
+    public static ModeStep openBundle(Path dataPath, Path indexPath) {
         return new ModeStep(dataPath, indexPath);
     }
 
