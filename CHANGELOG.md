@@ -1,6 +1,6 @@
 # FFindex-java Changelog
 
-ffindex-java 1.0.0
+ffindex-java 0.0.1
 -------------
 ### General
 - reading and (partially conformant) writing of FFindex files

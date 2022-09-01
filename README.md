@@ -46,14 +46,22 @@ Bundles provide some information about the content of a bundle (like the number 
 Read individual files by invoking `#readFile(String filename)`.
 All data read is returned as `ByteBuffer`.
 
-## Appendable Bundles
+## Write-only Bundles
 
 ```java
 WritableFileBundle writeable = FileBundleIO.openBundle(dataPath, indexPath).inWriteOnlyMode();
 ```
 
-Writable bundles provide several methods to write data using e.g. `#writeFile(String filename, byte[] content)`.
-All data to write should be provided as `ByteBuffer`, if possible.
+Writable bundles can write data using e.g. `#writeFile(String filename, ByteBuffer content)`.
+
+## Bundles for Reading and Writing
+
+```java
+AppendableFileBundle appendable = FileBundleIO.openBundle(dataPath, indexPath).inReadWriteMode();
+```
+
+Appendable bundles support all functionality of read-only and write-only bundles. However, they require more memory to 
+track metadata of written files, so it's a good idea to use read-/write-only bundles if possible. 
 
 # Details & Limitations
 No guarantees are made that files produced by this project are interoperable with the original FFindex files or 

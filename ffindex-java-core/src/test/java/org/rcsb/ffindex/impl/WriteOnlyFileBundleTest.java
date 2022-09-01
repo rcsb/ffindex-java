@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WriteOnlyFileBundleTest {
     @Test
-    public void whenWritingContent_thenIndexUpdatedAndContentMatches() throws IOException {
+    void whenWritingContent_thenIndexUpdatedAndContentMatches() throws IOException {
         Path dataPath = Files.createTempFile("file-bundle-test", "test.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "test.ffindex");
         Files.deleteIfExists(dataPath);

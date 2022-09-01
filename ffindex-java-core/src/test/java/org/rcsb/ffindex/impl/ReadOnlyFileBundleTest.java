@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ReadOnlyFileBundleTest {
     @Test
-    public void whenReadingFromFileBundle_thenContentMatchesExpectation() throws IOException {
+    void whenReadingFromFileBundle_thenContentMatchesExpectation() throws IOException {
         Path resourcePath = Paths.get("src/test/resources/");
         Path dataPath = resourcePath.resolve("test.data");
         Path indexPath = resourcePath.resolve("test.ffindex");
@@ -29,7 +29,7 @@ class ReadOnlyFileBundleTest {
     }
 
     @Test
-    public void whenReadingEmptyFile_thenEmptyStatusReported() throws IOException {
+    void whenReadingEmptyFile_thenEmptyStatusReported() throws IOException {
         Path dataPath = Files.createTempFile("file-bundle-test", "nope.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "nope.ffindex");
 
@@ -41,7 +41,7 @@ class ReadOnlyFileBundleTest {
     }
 
     @Test
-    public void whenReadingNonExistentFile_thenEmptyStatusReported() throws IOException {
+    void whenReadingNonExistentFile_thenEmptyStatusReported() throws IOException {
         Path dataPath = Files.createTempFile("file-bundle-test", "nope.data");
         Path indexPath = Files.createTempFile("file-bundle-test", "nope.ffindex");
 
