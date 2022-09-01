@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.stream.Stream;
 
+/**
+ * Read operations defined for a {@link FileBundle}.
+ */
 public interface ReadableFileBundle extends FileBundle {
     /**
      * Read a specific file, identified by its filename.

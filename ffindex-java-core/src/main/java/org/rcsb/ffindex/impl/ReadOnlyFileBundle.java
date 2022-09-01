@@ -15,9 +15,9 @@ import java.util.stream.Stream;
 public class ReadOnlyFileBundle implements ReadableFileBundle {
     private final RandomAccessFile dataFile;
     private final FileChannel dataFileChannel;
-    private final Entries entries;
+    private final ImmutableEntries entries;
 
-    public ReadOnlyFileBundle(RandomAccessFile dataFile, FileChannel dataFileChannel, Entries entries) {
+    public ReadOnlyFileBundle(RandomAccessFile dataFile, FileChannel dataFileChannel, ImmutableEntries entries) {
         this.dataFile = dataFile;
         this.dataFileChannel = dataFileChannel;
         this.entries = entries;

@@ -13,6 +13,7 @@ import org.rcsb.ffindex.WritableFileBundle;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,7 +65,7 @@ public class WriteBenchmark {
             try {
                 Path relative = sourceDirectory.relativize(p);
                 counter.incrementAndGet();
-                fileBundle.writeFile(relative.toString(), BenchmarkHelper.getBytes(p));
+                fileBundle.writeFile(relative.toString(), ByteBuffer.wrap(BenchmarkHelper.getBytes(p)));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

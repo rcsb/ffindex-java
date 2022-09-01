@@ -1,9 +1,11 @@
-package org.rcsb.ffindex;
+package org.rcsb.ffindex.impl;
 
 import org.junit.jupiter.api.Test;
+import org.rcsb.ffindex.Conversions;
+import org.rcsb.ffindex.FileBundleIO;
+import org.rcsb.ffindex.ReadableFileBundle;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -11,7 +13,7 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBundleIOTest {
+class ReadOnlyFileBundleTest {
     @Test
     public void whenReadingFromFileBundle_thenContentMatchesExpectation() throws IOException {
         Path resourcePath = Paths.get("src/test/resources/");
@@ -48,31 +50,5 @@ class FileBundleIOTest {
             assertEquals(0, fileBundle.fileCount());
             assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
         }
-    }
-
-    @Test
-    public void whenWritingContent_thenIndexUpdatedAndContentMatches() throws IOException {
-        Path dataPath = Files.createTempFile("file-bundle-test", "test.data");
-        Path indexPath = Files.createTempFile("file-bundle-test", "test.ffindex");
-        Files.deleteIfExists(dataPath);
-        Files.deleteIfExists(indexPath);
-
-        try (WritableFileBundle writableFileBundle = FileBundleIO.openBundle(dataPath, indexPath).inWriteOnlyMode()) {
-            writableFileBundle.writeFile("a", "a".getBytes(StandardCharsets.UTF_8));
-            writableFileBundle.writeFile("b", "bb".getBytes(StandardCharsets.UTF_8));
-            writableFileBundle.writeFile("c", "cc".getBytes(StandardCharsets.UTF_8));
-            writableFileBundle.writeFile("foo", "fooo\nfooo".getBytes(StandardCharsets.UTF_8));
-            writableFileBundle.close();
-
-            try (ReadableFileBundle readableFileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode()) {
-                assertArrayEquals(TestHelper.getBytes("data/a"), Conversions.toByteArray(readableFileBundle.readFile("a")));
-                assertArrayEquals(TestHelper.getBytes("data/b"), Conversions.toByteArray(readableFileBundle.readFile("b")));
-                assertArrayEquals(TestHelper.getBytes("data/c"), Conversions.toByteArray(readableFileBundle.readFile("c")));
-                assertArrayEquals(TestHelper.getBytes("data2/foo"), Conversions.toByteArray(readableFileBundle.readFile("foo")));
-            }
-        }
-
-        Files.deleteIfExists(dataPath);
-        Files.deleteIfExists(indexPath);
     }
 }

@@ -1,6 +1,8 @@
 package org.rcsb.ffindex;
 
-import org.rcsb.ffindex.impl.Entries;
+import org.rcsb.ffindex.impl.ImmutableEntries;
+import org.rcsb.ffindex.impl.MutableEntries;
+import org.rcsb.ffindex.impl.ReadWriteFileBundle;
 import org.rcsb.ffindex.impl.WriteOnlyFileBundle;
 import org.rcsb.ffindex.impl.ReadOnlyFileBundle;
 
@@ -44,19 +46,19 @@ public class FileBundleIO {
          * @return a bundle that is read-only
          * @throws IOException reading failed
          */
-        public ReadOnlyFileBundle inReadOnlyMode() throws IOException {
+        public ReadableFileBundle inReadOnlyMode() throws IOException {
             RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "r");
             FileChannel dataFileChannel = dataFile.getChannel();
-            return new ReadOnlyFileBundle(dataFile, dataFileChannel, Entries.of(indexPath));
+            return new ReadOnlyFileBundle(dataFile, dataFileChannel, ImmutableEntries.of(indexPath));
         }
 
         /**
-         * Create an appendable bundle.
+         * Create a write-only bundle.
          * @return a bundle that supports write operations
          * @throws IOException reading failed
          */
-        public WriteOnlyFileBundle inWriteOnlyMode() throws IOException {
-            createFiles(dataPath, indexPath);
+        public WritableFileBundle inWriteOnlyMode() throws IOException {
+            createFiles(false, dataPath, indexPath);
             RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
             FileChannel dataFileChannel = dataFile.getChannel();
             FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
@@ -64,12 +66,31 @@ public class FileBundleIO {
         }
 
         /**
-         * It's OK to open a {@link WritableFileBundle} without the files existing yet. If that's the case: create data and index file.
+         * Create an appendable bundle.
+         * @return a bundle that supports read and write operations
+         * @throws IOException initial reading failed
+         */
+        public AppendableFileBundle inReadWriteMode() throws IOException {
+            createFiles(true, dataPath, indexPath);
+            RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
+            FileChannel dataFileChannel = dataFile.getChannel();
+            FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
+            return new ReadWriteFileBundle(dataFile, dataFileChannel, indexFileChannel, MutableEntries.of(indexPath));
+        }
+
+        /**
+         * It's OK to open a {@link WritableFileBundle} without the files existing yet. If that's the case: create data
+         * and index file.
+         * @param canExist OK if files exist already?
          * @param paths any number of paths
          * @throws IOException file creation failed
          */
-        private static void createFiles(Path... paths) throws IOException {
+        private static void createFiles(boolean canExist, Path... paths) throws IOException {
             for (Path p : paths) {
+                if (Files.exists(p) && canExist) {
+                    continue;
+                }
+
                 Files.createFile(p);
             }
         }

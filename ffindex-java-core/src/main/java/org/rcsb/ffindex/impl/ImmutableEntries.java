@@ -1,5 +1,7 @@
 package org.rcsb.ffindex.impl;
 
+import org.rcsb.ffindex.Entries;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +15,7 @@ import static org.rcsb.ffindex.FileBundle.INDEX_ENTRY_DELIMITER;
 /**
  * Holds information on the files in a read-only bundle.
  */
-public class Entries {
+public class ImmutableEntries implements Entries {
     private final Map<String, Integer> indices;
     private final long[] offsets;
     private final int[] lengths;
@@ -24,7 +26,7 @@ public class Entries {
      * @param offsets array of offset values
      * @param lengths array of length values
      */
-    private Entries(Map<String, Integer> indices, long[] offsets, int[] lengths) {
+    private ImmutableEntries(Map<String, Integer> indices, long[] offsets, int[] lengths) {
         this.indices = indices;
         this.offsets = offsets;
         this.lengths = lengths;
@@ -36,7 +38,7 @@ public class Entries {
      * @return an Entries object
      * @throws IOException reading failed
      */
-    public static Entries of(Path indexPath) throws IOException {
+    public static ImmutableEntries of(Path indexPath) throws IOException {
         List<String> lines = Files.readAllLines(indexPath);
         int lineCount = lines.size();
 
@@ -49,48 +51,30 @@ public class Entries {
             offsets[i] = Long.parseLong(split[1]);
             lengths[i] = Integer.parseInt(split[2]);
         }
-        return new Entries(indices, offsets, lengths);
+        return new ImmutableEntries(indices, offsets, lengths);
     }
 
-    /**
-     * Retrieve the index that corresponds to the given filename.
-     * @param filename the filename to resolve
-     * @return the index in the other arrays, -1 if not found
-     */
+    @Override
     public int getIndex(String filename) {
         return indices.getOrDefault(filename, -1);
     }
 
-    /**
-     * The offset of a file.
-     * @param index the index of this file
-     * @return the start position as long
-     */
+    @Override
     public long getOffset(int index) {
         return offsets[index];
     }
 
-    /**
-     * The length of a file.
-     * @param index the index of this file
-     * @return the length as int
-     */
+    @Override
     public int getLength(int index) {
         return lengths[index];
     }
 
-    /**
-     * The collection of all registered filenames.
-     * @return a set of Strings
-     */
+    @Override
     public Set<String> getFilenames() {
         return indices.keySet();
     }
 
-    /**
-     * The number of files present in this bundle.
-     * @return an int
-     */
+    @Override
     public int size() {
         return indices.size();
     }
