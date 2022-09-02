@@ -26,12 +26,11 @@ public class WriteOnlyFileBundle implements WritableFileBundle {
         this.offset = 0;
     }
 
-    public long writeFile(String filename, ByteBuffer byteBuffer) throws IOException {
+    public void writeFile(String filename, ByteBuffer byteBuffer) throws IOException {
         int length = byteBuffer.limit() + FILE_END_LENGTH; // separated by NUL
         synchronized (writeLock) {
             writeIndexEntry(filename, length);
             writeData(byteBuffer);
-            return offset;
         }
     }
 

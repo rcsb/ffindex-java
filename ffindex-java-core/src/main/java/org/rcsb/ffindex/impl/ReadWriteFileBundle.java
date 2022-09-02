@@ -65,7 +65,7 @@ public class ReadWriteFileBundle implements AppendableFileBundle {
     }
 
     @Override
-    public long writeFile(String filename, ByteBuffer byteBuffer) throws IOException {
+    public void writeFile(String filename, ByteBuffer byteBuffer) throws IOException {
         if (containsFile(filename)) {
             throw new IllegalStateException("File '" + filename + "' already exists - write to a new file if you want to update existing content");
         }
@@ -74,7 +74,6 @@ public class ReadWriteFileBundle implements AppendableFileBundle {
         synchronized (writeLock) {
             writeIndexEntry(filename, length);
             writeData(byteBuffer);
-            return offset;
         }
     }
 
