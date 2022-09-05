@@ -53,6 +53,8 @@ WritableFileBundle writeable = FileBundleIO.openBundle(dataPath, indexPath).inWr
 ```
 
 Writable bundles can write data using e.g. `#writeFile(String filename, ByteBuffer content)`.
+Make sure to write files in alphabetical order or invoke `#sortIndexFile()` when done writing. This ensures that index 
+files can be read again.
 
 ## Bundles for Reading and Writing
 
@@ -65,9 +67,7 @@ track metadata of written files, so it's a good idea to use read-/write-only bun
 
 # Details & Limitations
 No guarantees are made that files produced by this project are interoperable with the original FFindex files or 
-implementations. This implementation is motivated by FFindex and produces identical files in simple cases. However, the
-original FFindex anticipates index entries to be sorted (to perform binary search on it), this implementation writes 
-entries in their insertion order and implements access by a map.
+implementations. This implementation is motivated by FFindex and produces identical files in simple cases.
 
 The maximum size of individual files to store is ~2 GB. The maximum number of files is capped by the size of Java arrays
 as well.
