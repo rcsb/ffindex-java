@@ -1,15 +1,10 @@
 package org.rcsb.ffindex;
 
-import org.rcsb.ffindex.impl.ImmutableEntries;
-import org.rcsb.ffindex.impl.MutableEntries;
 import org.rcsb.ffindex.impl.ReadWriteFileBundle;
 import org.rcsb.ffindex.impl.WriteOnlyFileBundle;
 import org.rcsb.ffindex.impl.ReadOnlyFileBundle;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -46,9 +41,7 @@ public class FileBundleIO {
          * @throws IOException reading failed
          */
         public ReadableFileBundle inReadOnlyMode() throws IOException {
-            RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "r");
-            FileChannel dataFileChannel = dataFile.getChannel();
-            return new ReadOnlyFileBundle(dataFile, dataFileChannel, ImmutableEntries.of(indexPath));
+            return new ReadOnlyFileBundle(dataPath, indexPath);
         }
 
         /**
@@ -58,10 +51,7 @@ public class FileBundleIO {
          */
         public WritableFileBundle inWriteOnlyMode() throws IOException {
             createFiles(false, dataPath, indexPath);
-            RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
-            FileChannel dataFileChannel = dataFile.getChannel();
-            FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
-            return new WriteOnlyFileBundle(dataFile, dataFileChannel, indexFileChannel);
+            return new WriteOnlyFileBundle(dataPath, indexPath);
         }
 
         /**
@@ -71,10 +61,7 @@ public class FileBundleIO {
          */
         public AppendableFileBundle inReadWriteMode() throws IOException {
             createFiles(true, dataPath, indexPath);
-            RandomAccessFile dataFile = new RandomAccessFile(dataPath.toFile(), "rw");
-            FileChannel dataFileChannel = dataFile.getChannel();
-            FileChannel indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
-            return new ReadWriteFileBundle(dataFile, dataFileChannel, indexFileChannel, MutableEntries.of(indexPath));
+            return new ReadWriteFileBundle(dataPath, indexPath);
         }
 
         /**

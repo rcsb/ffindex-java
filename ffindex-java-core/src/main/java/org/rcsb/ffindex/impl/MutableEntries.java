@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.rcsb.ffindex.FileBundle.INDEX_ENTRY_DELIMITER;
 
@@ -72,8 +72,8 @@ public class MutableEntries implements Entries {
     }
 
     @Override
-    public Set<String> getFilenames() {
-        return indices.keySet();
+    public Stream<String> filenames() {
+        return indices.keySet().stream();
     }
 
     @Override

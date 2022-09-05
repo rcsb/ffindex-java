@@ -3,6 +3,7 @@ package org.rcsb.ffindex;
 import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 /**
  * A FFindex bundle, comprised of data and index file. Files are identified by their filename. Directory structures can
@@ -12,9 +13,13 @@ import java.nio.charset.StandardCharsets;
  */
 public interface FileBundle extends Closeable {
     /**
+     * How lines are terminated.
+     */
+    String LINE_END = "\n";
+    /**
      * How files are terminated in the data file.
      */
-    String FILE_END = "\n\u0000";
+    String FILE_END = LINE_END + "\u0000";
     /**
      * The length of the file end sequence.
      */
@@ -27,4 +32,16 @@ public interface FileBundle extends Closeable {
      * Delimiter in index entry lines.
      */
     String INDEX_ENTRY_DELIMITER = "\t";
+
+    /**
+     * Path to the data file.
+     * @return a {@link Path}
+     */
+    Path getDataPath();
+
+    /**
+     * Path to the index file.
+     * @return a {@link Path}
+     */
+    Path getIndexPath();
 }

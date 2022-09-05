@@ -2,31 +2,29 @@ package org.rcsb.ffindex.impl;
 
 import org.rcsb.ffindex.AppendableFileBundle;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 /**
  * A bundle that supports reading and writing. Can be opened on existing files. Files added will be written to the
  * underlying files and can be read-back immediately.
  */
-public class ReadWriteFileBundle implements AppendableFileBundle {
+public class ReadWriteFileBundle extends AbstractFileBundle implements AppendableFileBundle {
     private final Object writeLock = new Object();
-    private final RandomAccessFile dataFile;
-    private final FileChannel dataFileChannel;
     private final FileChannel indexFileChannel;
     private final MutableEntries entries;
     private long offset;
 
-    public ReadWriteFileBundle(RandomAccessFile dataFile, FileChannel dataFileChannel, FileChannel indexFileChannel, MutableEntries entries) {
-        this.dataFile = dataFile;
-        this.dataFileChannel = dataFileChannel;
-        this.indexFileChannel = indexFileChannel;
-        this.entries = entries;
+    public ReadWriteFileBundle(Path dataPath, Path indexPath) throws IOException {
+        super(dataPath, indexPath, "rw");
+        this.indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
+        this.entries = MutableEntries.of(indexPath);
         this.offset = 0;
         if (entries.size() > 0) {
             long largestOffset = -1;
@@ -61,7 +59,7 @@ public class ReadWriteFileBundle implements AppendableFileBundle {
 
     @Override
     public Stream<String> filenames() {
-        return entries.getFilenames().stream();
+        return entries.filenames();
     }
 
     @Override
@@ -81,7 +79,7 @@ public class ReadWriteFileBundle implements AppendableFileBundle {
         entries.addFile(filename, offset, length);
         String line = filename + INDEX_ENTRY_DELIMITER +
                 offset + INDEX_ENTRY_DELIMITER +
-                length + System.lineSeparator();
+                length + "\n";
         ByteBuffer out = ByteBuffer.wrap(line.getBytes(StandardCharsets.UTF_8));
         indexFileChannel.write(out);
     }
@@ -90,6 +88,13 @@ public class ReadWriteFileBundle implements AppendableFileBundle {
         offset += dataFileChannel.write(byteBuffer);
         FILE_END_BUFFER.rewind();
         offset += dataFileChannel.write(FILE_END_BUFFER);
+    }
+
+    @Override
+    public void sortIndexFile() throws IOException {
+        synchronized (writeLock) {
+            sortIndexFile(indexPath);
+        }
     }
 
     @Override

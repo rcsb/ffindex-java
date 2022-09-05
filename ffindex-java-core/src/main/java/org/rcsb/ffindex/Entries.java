@@ -1,6 +1,6 @@
 package org.rcsb.ffindex;
 
-import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Holds all known files of a particular bundle.
@@ -31,7 +31,7 @@ public interface Entries {
      * The collection of all registered filenames.
      * @return a set of Strings
      */
-    Set<String> getFilenames();
+    Stream<String> filenames();
 
     /**
      * The number of files present in this bundle.

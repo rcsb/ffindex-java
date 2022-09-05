@@ -5,10 +5,9 @@ import org.rcsb.ffindex.Entries;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.rcsb.ffindex.FileBundle.INDEX_ENTRY_DELIMITER;
 
@@ -16,18 +15,18 @@ import static org.rcsb.ffindex.FileBundle.INDEX_ENTRY_DELIMITER;
  * Holds information on the files in a read-only bundle.
  */
 public class ImmutableEntries implements Entries {
-    private final Map<String, Integer> indices;
+    private final String[] filenames;
     private final long[] offsets;
     private final int[] lengths;
 
     /**
      * Create a new Entries object.
-     * @param indices map of filenames -> index position of array
+     * @param filenames array of filenames, must be sorted
      * @param offsets array of offset values
      * @param lengths array of length values
      */
-    private ImmutableEntries(Map<String, Integer> indices, long[] offsets, int[] lengths) {
-        this.indices = indices;
+    private ImmutableEntries(String[] filenames, long[] offsets, int[] lengths) {
+        this.filenames = filenames;
         this.offsets = offsets;
         this.lengths = lengths;
     }
@@ -42,21 +41,21 @@ public class ImmutableEntries implements Entries {
         List<String> lines = Files.readAllLines(indexPath);
         int lineCount = lines.size();
 
-        Map<String, Integer> indices = new HashMap<>();
+        String[] filenames = new String[lineCount];
         long[] offsets = new long[lineCount];
         int[] lengths = new int[lineCount];
         for (int i = 0; i < lineCount; i++) {
             String[] split = lines.get(i).split(INDEX_ENTRY_DELIMITER);
-            indices.put(split[0], i);
+            filenames[i] = split[0];
             offsets[i] = Long.parseLong(split[1]);
             lengths[i] = Integer.parseInt(split[2]);
         }
-        return new ImmutableEntries(indices, offsets, lengths);
+        return new ImmutableEntries(filenames, offsets, lengths);
     }
 
     @Override
     public int getIndex(String filename) {
-        return indices.getOrDefault(filename, -1);
+        return Arrays.binarySearch(filenames, filename);
     }
 
     @Override
@@ -70,12 +69,12 @@ public class ImmutableEntries implements Entries {
     }
 
     @Override
-    public Set<String> getFilenames() {
-        return indices.keySet();
+    public Stream<String> filenames() {
+        return Stream.of(filenames);
     }
 
     @Override
     public int size() {
-        return indices.size();
+        return filenames.length;
     }
 }

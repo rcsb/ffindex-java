@@ -3,24 +3,21 @@ package org.rcsb.ffindex.impl;
 import org.rcsb.ffindex.ReadableFileBundle;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 /**
  * A bundle that supports only read operations.
  */
-public class ReadOnlyFileBundle implements ReadableFileBundle {
-    private final RandomAccessFile dataFile;
-    private final FileChannel dataFileChannel;
+public class ReadOnlyFileBundle extends AbstractFileBundle implements ReadableFileBundle {
     private final ImmutableEntries entries;
 
-    public ReadOnlyFileBundle(RandomAccessFile dataFile, FileChannel dataFileChannel, ImmutableEntries entries) {
-        this.dataFile = dataFile;
-        this.dataFileChannel = dataFileChannel;
-        this.entries = entries;
+    public ReadOnlyFileBundle(Path dataPath, Path indexPath) throws IOException {
+        super(dataPath, indexPath, "r");
+        this.entries = ImmutableEntries.of(indexPath);
     }
 
     @Override
@@ -44,7 +41,7 @@ public class ReadOnlyFileBundle implements ReadableFileBundle {
 
     @Override
     public Stream<String> filenames() {
-        return entries.getFilenames().stream();
+        return entries.filenames();
     }
 
     @Override

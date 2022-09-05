@@ -2,27 +2,26 @@ package org.rcsb.ffindex.impl;
 
 import org.rcsb.ffindex.WritableFileBundle;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 /**
  * A bundle that supports write operations. Note that write-only bundles don't track written files and don't check that
  * written files have unique names. The behavior is undefined if multiple files with the same name were registered.
  */
-public class WriteOnlyFileBundle implements WritableFileBundle {
+public class WriteOnlyFileBundle extends AbstractFileBundle implements WritableFileBundle {
     private final Object writeLock = new Object();
-    private final RandomAccessFile dataFile;
-    private final FileChannel dataFileChannel;
     private final FileChannel indexFileChannel;
     private long offset;
 
-    public WriteOnlyFileBundle(RandomAccessFile dataFile, FileChannel dataFileChannel, FileChannel indexFileChannel) {
-        this.dataFile = dataFile;
-        this.dataFileChannel = dataFileChannel;
-        this.indexFileChannel = indexFileChannel;
+    public WriteOnlyFileBundle(Path dataPath, Path indexPath) throws FileNotFoundException {
+        super(dataPath, indexPath, "rw");
+        this.indexFileChannel = new FileOutputStream(indexPath.toFile(), true).getChannel();
         this.offset = 0;
     }
 
@@ -37,7 +36,7 @@ public class WriteOnlyFileBundle implements WritableFileBundle {
     private void writeIndexEntry(String filename, int length) throws IOException {
         String line = filename + INDEX_ENTRY_DELIMITER +
                 offset + INDEX_ENTRY_DELIMITER +
-                length + System.lineSeparator();
+                length + "\n";
         ByteBuffer out = ByteBuffer.wrap(line.getBytes(StandardCharsets.UTF_8));
         indexFileChannel.write(out);
     }
@@ -46,6 +45,13 @@ public class WriteOnlyFileBundle implements WritableFileBundle {
         offset += dataFileChannel.write(byteBuffer);
         FILE_END_BUFFER.rewind();
         offset += dataFileChannel.write(FILE_END_BUFFER);
+    }
+
+    @Override
+    public void sortIndexFile() throws IOException {
+        synchronized (writeLock) {
+            sortIndexFile(indexPath);
+        }
     }
 
     @Override
