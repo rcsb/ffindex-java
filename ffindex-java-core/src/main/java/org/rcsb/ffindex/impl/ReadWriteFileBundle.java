@@ -91,13 +91,6 @@ public class ReadWriteFileBundle extends AbstractFileBundle implements Appendabl
     }
 
     @Override
-    public void sortIndexFile() throws IOException {
-        synchronized (writeLock) {
-            sortIndexFile(indexPath);
-        }
-    }
-
-    @Override
     public void close() throws IOException {
         indexFileChannel.close();
         dataFileChannel.close();
