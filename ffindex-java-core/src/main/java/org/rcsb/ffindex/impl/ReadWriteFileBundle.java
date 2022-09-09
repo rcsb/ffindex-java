@@ -1,6 +1,7 @@
 package org.rcsb.ffindex.impl;
 
 import org.rcsb.ffindex.AppendableFileBundle;
+import org.rcsb.ffindex.FileBundle;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -79,7 +80,7 @@ public class ReadWriteFileBundle extends AbstractFileBundle implements Appendabl
         entries.addFile(filename, offset, length);
         String line = filename + INDEX_ENTRY_DELIMITER +
                 offset + INDEX_ENTRY_DELIMITER +
-                length + "\n";
+                length + FileBundle.LINE_END;
         ByteBuffer out = ByteBuffer.wrap(line.getBytes(StandardCharsets.UTF_8));
         indexFileChannel.write(out);
     }

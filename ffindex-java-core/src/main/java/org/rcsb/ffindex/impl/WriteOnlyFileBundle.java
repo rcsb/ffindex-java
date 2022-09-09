@@ -1,5 +1,6 @@
 package org.rcsb.ffindex.impl;
 
+import org.rcsb.ffindex.FileBundle;
 import org.rcsb.ffindex.WritableFileBundle;
 
 import java.io.FileNotFoundException;
@@ -36,7 +37,7 @@ public class WriteOnlyFileBundle extends AbstractFileBundle implements WritableF
     private void writeIndexEntry(String filename, int length) throws IOException {
         String line = filename + INDEX_ENTRY_DELIMITER +
                 offset + INDEX_ENTRY_DELIMITER +
-                length + "\n";
+                length + FileBundle.LINE_END;
         ByteBuffer out = ByteBuffer.wrap(line.getBytes(StandardCharsets.UTF_8));
         indexFileChannel.write(out);
     }

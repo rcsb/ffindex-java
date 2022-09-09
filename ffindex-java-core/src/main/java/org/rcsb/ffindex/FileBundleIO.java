@@ -5,8 +5,12 @@ import org.rcsb.ffindex.impl.WriteOnlyFileBundle;
 import org.rcsb.ffindex.impl.ReadOnlyFileBundle;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * IO operations on a bunch of files. FFindex-style.
@@ -21,6 +25,23 @@ public class FileBundleIO {
      */
     public static ModeStep openBundle(Path dataPath, Path indexPath) {
         return new ModeStep(dataPath, indexPath);
+    }
+
+    /**
+     * Sorts all entries of an index file. Not relevant for this library but this allows for interoperability with other
+     * FFindex implementations, which perform a binary search to navigate the contents of the index file. Modified the
+     * file in place.
+     * @param indexPath the location of the corresponding index file
+     * @throws IOException reading or writing failed
+     */
+    public static void sortIndexFile(Path indexPath) throws IOException {
+        byte[] bytes;
+        try (Stream<String> lines = Files.lines(indexPath)) {
+            bytes = lines.sorted(Comparator.comparing(l -> l.split(FileBundle.INDEX_ENTRY_DELIMITER)[0]))
+                    .collect(Collectors.joining(FileBundle.LINE_END, "", FileBundle.LINE_END))
+                    .getBytes(StandardCharsets.UTF_8);
+        }
+        Files.write(indexPath, bytes);
     }
 
     /**
