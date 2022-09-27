@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  * underlying files and can be read-back immediately.
  */
 public class ReadWriteFileBundle extends AbstractFileBundle implements AppendableFileBundle {
-    private final Object writeLock = new Object();
+    private final FFIndexJavaWriteLock writeLock = new FFIndexJavaWriteLock();
     private final FileChannel indexFileChannel;
     private final MutableEntries entries;
     private long offset;

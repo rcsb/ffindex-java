@@ -16,7 +16,7 @@ import java.nio.file.Path;
  * written files have unique names. The behavior is undefined if multiple files with the same name were registered.
  */
 public class WriteOnlyFileBundle extends AbstractFileBundle implements WritableFileBundle {
-    private final Object writeLock = new Object();
+    private final FFIndexJavaWriteLock writeLock = new FFIndexJavaWriteLock();
     private final FileChannel indexFileChannel;
     private long offset;
 
