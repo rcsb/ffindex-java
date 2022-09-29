@@ -12,6 +12,8 @@ import java.util.Arrays;
  * Utility functions for benchmarking.
  */
 class BenchmarkHelper {
+    private BenchmarkHelper() {}
+
     /**
      * Get the contents of a file.
      * @param path what to read

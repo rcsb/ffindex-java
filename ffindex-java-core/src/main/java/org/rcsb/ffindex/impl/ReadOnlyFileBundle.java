@@ -26,7 +26,7 @@ public class ReadOnlyFileBundle extends AbstractFileBundle implements ReadableFi
         if (index == -1) {
             throw new NoSuchFileException("No file with name '" + filename + "'");
         }
-        return dataFileChannel.map(FileChannel.MapMode.READ_ONLY, entries.getOffset(index), entries.getLength(index) - FILE_END_LENGTH);
+        return dataFileChannel.map(FileChannel.MapMode.READ_ONLY, entries.getOffset(index), (long) entries.getLength(index) - FILE_END_LENGTH);
     }
 
     @Override

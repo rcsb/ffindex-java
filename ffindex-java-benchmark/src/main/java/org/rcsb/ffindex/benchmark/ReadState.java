@@ -36,12 +36,12 @@ public class ReadState {
         try {
             List<Path> allFiles = Files.list(sourceDirectory).collect(Collectors.toList());
             Collections.shuffle(allFiles);
-            List<Path> files = allFiles.stream().limit(TO_READ).collect(Collectors.toList());
-            List<String> filenames = files.stream()
+            List<Path> filesToRead = allFiles.stream().limit(TO_READ).collect(Collectors.toList());
+            List<String> filenamesToRead = filesToRead.stream()
                     .map(sourceDirectory::relativize)
                     .map(Object::toString)
                     .collect(Collectors.toList());
-            return new Object[] { files, filenames };
+            return new Object[] { filesToRead, filenamesToRead };
         } catch (IOException e) {
             System.err.println("Couldn't initialize benchmark state");
             return new Object[] { Collections.emptyList(), Collections.emptyList() };

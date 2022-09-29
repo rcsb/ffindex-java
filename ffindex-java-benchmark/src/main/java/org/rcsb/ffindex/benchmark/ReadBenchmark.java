@@ -40,9 +40,9 @@ public class ReadBenchmark {
 
     @Benchmark
     public void readFFindex(Blackhole blackhole, ReadState state) throws IOException {
-        try (ReadableFileBundle fileBundle = FileBundleIO.openBundle(state.dataIn, state.indexIn).inReadOnlyMode()) {
+        try (ReadableFileBundle readableFileBundle = FileBundleIO.openBundle(state.dataIn, state.indexIn).inReadOnlyMode()) {
             for (String filename : state.filenames) {
-                blackhole.consume(BenchmarkHelper.hashContents(fileBundle.readFile(filename)));
+                blackhole.consume(BenchmarkHelper.hashContents(readableFileBundle.readFile(filename)));
             }
         }
     }

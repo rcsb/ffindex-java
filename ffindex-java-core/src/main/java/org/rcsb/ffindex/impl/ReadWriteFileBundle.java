@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  * underlying files and can be read-back immediately.
  */
 public class ReadWriteFileBundle extends AbstractFileBundle implements AppendableFileBundle {
-    private final WriteLock writeLock = new WriteLock();
+    private final WriteLock writeLock = new WriteLock() {};
     private final FileChannel indexFileChannel;
     private final MutableEntries entries;
     private long offset;
@@ -45,7 +45,7 @@ public class ReadWriteFileBundle extends AbstractFileBundle implements Appendabl
         if (index == -1) {
             throw new NoSuchFileException("No file with name '" + filename + "'");
         }
-        return dataFileChannel.map(FileChannel.MapMode.READ_ONLY, entries.getOffset(index), entries.getLength(index) - FILE_END_LENGTH);
+        return dataFileChannel.map(FileChannel.MapMode.READ_ONLY, entries.getOffset(index), (long) entries.getLength(index) - FILE_END_LENGTH);
     }
 
     @Override

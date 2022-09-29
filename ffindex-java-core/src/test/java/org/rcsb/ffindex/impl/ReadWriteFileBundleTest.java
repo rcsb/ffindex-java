@@ -7,6 +7,7 @@ import org.rcsb.ffindex.FileBundleIO;
 import org.rcsb.ffindex.TestHelper;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,7 +22,8 @@ class ReadWriteFileBundleTest {
         Path indexPath = resourcePath.resolve("test.ffindex");
 
         try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadWriteMode()) {
-            assertThrows(IllegalStateException.class, () -> fileBundle.writeFile("a", Conversions.toByteBuffer("reject")));
+            ByteBuffer byteBuffer = Conversions.toByteBuffer("reject");
+            assertThrows(IllegalStateException.class, () -> fileBundle.writeFile("a", byteBuffer));
         }
     }
 
@@ -32,7 +34,8 @@ class ReadWriteFileBundleTest {
 
         try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadWriteMode()) {
             fileBundle.writeFile("a", Conversions.toByteBuffer("OK"));
-            assertThrows(IllegalStateException.class, () -> fileBundle.writeFile("a", Conversions.toByteBuffer("reject")));
+            ByteBuffer byteBuffer = Conversions.toByteBuffer("reject");
+            assertThrows(IllegalStateException.class, () -> fileBundle.writeFile("a", byteBuffer));
         }
     }
 
