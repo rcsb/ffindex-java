@@ -1,3 +1,6 @@
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.rcsb/ffindex-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.rcsb/ffindex-java)
+[![Changelog](https://img.shields.io/badge/changelog--lightgrey.svg?style=flat)](https://github.com/rcsb/ffindex-java/blob/master/CHANGELOG.md)
+
 # Overview
 
 FFindex is a very simple index/database for huge amounts of small files. The files are stored concatenated in one big 

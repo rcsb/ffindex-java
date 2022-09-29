@@ -19,6 +19,13 @@
         <url>https://www.rcsb.org/</url>
     </organization>
 
+    <licenses>
+        <license>
+            <name>Attribution-ShareAlike 4.0 International</name>
+            <url>https://creativecommons.org/licenses/by-sa/4.0/</url>
+        </license>
+    </licenses>
+
     <developers>
         <developer>
             <name>Sebastian Bittrich</name>
