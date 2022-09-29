@@ -1,5 +1,10 @@
 # FFindex-java Changelog
 
+ffindex-java 0.1.1
+-------------
+### Bug Fixes
+- provide license in POM
+
 ffindex-java 0.1.0
 -------------
 ### General

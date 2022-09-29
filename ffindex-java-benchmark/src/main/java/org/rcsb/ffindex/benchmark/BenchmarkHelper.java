@@ -32,7 +32,6 @@ class BenchmarkHelper {
             byteArrayOutputStream.flush();
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             byteArrayOutputStream.close();
-            inputStream.close();
             return byteArray;
         }
     }
