@@ -29,7 +29,7 @@ public class FileBundleIO {
 
     /**
      * Sorts all entries of an index file. Not relevant for this library but this allows for interoperability with other
-     * FFindex implementations, which perform a binary search to navigate the contents of the index file. Modified the
+     * FFindex implementations, which perform a binary search to navigate the contents of the index file. Modifies the
      * file in place.
      * @param indexPath the location of the corresponding index file
      * @throws IOException reading or writing failed
@@ -66,9 +66,9 @@ public class FileBundleIO {
         }
 
         /**
-         * Create a write-only bundle.
-         * @return a bundle that supports write operations
-         * @throws IOException reading failed
+         * Create a new write-only bundle.
+         * @return a new bundle that supports write operations
+         * @throws IOException files already exists or reading failed
          */
         public WritableFileBundle inWriteOnlyMode() throws IOException {
             createFiles(false, dataPath, indexPath);
