@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @State(Scope.Benchmark)
 public class ReadState {
@@ -33,8 +34,8 @@ public class ReadState {
     }
 
     private Object[] initLists() {
-        try {
-            List<Path> allFiles = Files.list(sourceDirectory).collect(Collectors.toList());
+        try (Stream<Path> fileStream = Files.list(sourceDirectory)) {
+            List<Path> allFiles = fileStream.collect(Collectors.toList());
             Collections.shuffle(allFiles);
             List<Path> filesToRead = allFiles.stream().limit(TO_READ).collect(Collectors.toList());
             List<String> filenamesToRead = filesToRead.stream()

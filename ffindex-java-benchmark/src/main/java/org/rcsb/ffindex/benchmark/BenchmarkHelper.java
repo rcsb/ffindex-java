@@ -24,17 +24,17 @@ class BenchmarkHelper {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         int bytesRead;
         byte[] buffer = new byte[1024];
-        InputStream inputStream = Files.newInputStream(path);
-        while ((bytesRead = inputStream.read(buffer, 0, buffer.length)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, bytesRead);
+        try (InputStream inputStream = Files.newInputStream(path)) {
+            while ((bytesRead = inputStream.read(buffer, 0, buffer.length)) != -1) {
+                byteArrayOutputStream.write(buffer, 0, bytesRead);
+            }
+
+            byteArrayOutputStream.flush();
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            byteArrayOutputStream.close();
+            inputStream.close();
+            return byteArray;
         }
-
-        byteArrayOutputStream.flush();
-        byte[] byteArray = byteArrayOutputStream.toByteArray();
-        byteArrayOutputStream.close();
-        inputStream.close();
-
-        return byteArray;
     }
 
     static int hashContents(Path path) throws IOException {

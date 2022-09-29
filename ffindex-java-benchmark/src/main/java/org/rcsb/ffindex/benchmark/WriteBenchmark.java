@@ -58,19 +58,20 @@ public class WriteBenchmark {
 
     private int addDirectory(WritableFileBundle fileBundle, Path sourceDirectory, boolean parallel) throws IOException {
         AtomicInteger counter = new AtomicInteger(0);
-        Stream<Path> files = Files.walk(sourceDirectory);
-        if (parallel) files = files.parallel();
+        try (Stream<Path> stream = Files.walk(sourceDirectory)) {
+            Stream<Path> files = parallel ? stream.parallel() : stream;
 
-        files.filter(Files::isRegularFile).forEach(p -> {
-            try {
-                Path relative = sourceDirectory.relativize(p);
-                counter.incrementAndGet();
-                fileBundle.writeFile(relative.toString(), ByteBuffer.wrap(BenchmarkHelper.getBytes(p)));
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-        return counter.get();
+            files.filter(Files::isRegularFile).forEach(p -> {
+                try {
+                    Path relative = sourceDirectory.relativize(p);
+                    counter.incrementAndGet();
+                    fileBundle.writeFile(relative.toString(), ByteBuffer.wrap(BenchmarkHelper.getBytes(p)));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+            return counter.get();
+        }
     }
 
     private int runCommand(String[] args) throws IOException, InterruptedException {
