@@ -28,14 +28,17 @@ public class ReadWriteFileBundle extends AbstractFileBundle implements Appendabl
         this.entries = MutableEntries.of(indexPath);
         this.offset = 0;
         if (entries.size() > 0) {
+            int index = 0;
             long largestOffset = -1;
             for (int i = 0; i < entries.size(); i++) {
                 long o = entries.getOffset(i);
                 if (o > largestOffset) {
                     largestOffset = o;
+                    index = i;
                 }
             }
-            this.offset = largestOffset;
+            this.offset = largestOffset + entries.getLength(index);
+            dataFileChannel.position(offset);
         }
     }
 
