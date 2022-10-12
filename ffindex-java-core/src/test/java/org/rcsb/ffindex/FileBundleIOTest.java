@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -36,6 +37,27 @@ class FileBundleIOTest {
         assertEquals(1, Arrays.binarySearch(filenames, "b"));
         assertEquals(2, Arrays.binarySearch(filenames, "c"));
         assertEquals(3, Arrays.binarySearch(filenames, "foo"));
+    }
+
+    @Test
+    void whenUnlinkingFiles_thenIndexUpdatedAndDataFileNot() throws IOException {
+        Path resourceIndex = Paths.get("src/test/resources/").resolve("test.ffindex");
+        Path testIndex = Files.createTempFile("file-bundle-test", "test.ffindex");
+        Files.copy(resourceIndex, testIndex, StandardCopyOption.REPLACE_EXISTING);
+
+        Path resourceData = Paths.get("src/test/resources/").resolve("test.data");
+        Path testData = Files.createTempFile("file-bundle-test", "test.data");
+        Files.copy(resourceData, testData, StandardCopyOption.REPLACE_EXISTING);
+
+        FileBundleIO.unlinkFiles(testIndex, "a", "c", "not");
+
+        assertArrayEquals(Files.readAllBytes(resourceData), Files.readAllBytes(testData), "Data file content should not change");
+
+        ReadableFileBundle fileBundle = FileBundleIO.openBundle(testData, testIndex).inReadOnlyMode();
+        assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
+        assertEquals("bb", Conversions.toString(fileBundle.readFile("b")));
+        assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("c"));
+        assertEquals("fooo\nfooo", Conversions.toString(fileBundle.readFile("foo")));
     }
 
     boolean isSorted(List<String> collection) {
