@@ -82,6 +82,18 @@ class FileBundleIOTest {
         assertEquals("fooo\nfooo", Conversions.toString(fileBundle.readFile("foo")));
     }
 
+    @Test
+    void whenCompactingEmptyDataFile_thenNop() throws IOException {
+        Path dataPath = Files.createTempFile("file-bundle-test", "test.data");
+        Path indexPath = Files.createTempFile("file-bundle-test", "test.ffindex");
+
+        FileBundleIO.unlinkFiles(indexPath);
+        FileBundleIO.compactBundle(dataPath, indexPath);
+
+        ReadableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadOnlyMode();
+        assertEquals(0, fileBundle.fileCount());
+    }
+
     boolean isSorted(List<String> collection) {
         if (collection.isEmpty() || collection.size() == 1) {
             return true;

@@ -124,7 +124,11 @@ public class FileBundleIO {
      * @throws IOException reading or writing failed
      */
     public static void unlinkFiles(Path indexPath, String... filenamesToDrop) throws IOException {
+        if (filenamesToDrop.length == 0) {
+            return;
+        }
         Set<String> set = Set.of(filenamesToDrop);
+
         byte[] bytes;
         try (Stream<String> lines = Files.lines(indexPath)) {
             bytes = lines.filter(l -> !set.contains(l.split(INDEX_ENTRY_DELIMITER)[0]))
