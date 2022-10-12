@@ -23,6 +23,13 @@ public class MutableEntries implements Entries {
     private final List<Integer> lengths;
 
     /**
+     * Create an empty Entries object.
+     */
+    public MutableEntries() {
+        this(new HashMap<>(), new ArrayList<>(), new ArrayList<>());
+    }
+
+    /**
      * Create a new Entries object.
      * @param indices map of filenames -> index position of array
      * @param offsets array of offset values
