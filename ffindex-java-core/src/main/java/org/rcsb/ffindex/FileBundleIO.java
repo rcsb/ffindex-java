@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,6 +43,25 @@ public class FileBundleIO {
         byte[] bytes;
         try (Stream<String> lines = Files.lines(indexPath)) {
             bytes = lines.sorted(Comparator.comparing(l -> l.split(FileBundle.INDEX_ENTRY_DELIMITER)[0]))
+                    .collect(Collectors.joining(FileBundle.LINE_END, "", FileBundle.LINE_END))
+                    .getBytes(StandardCharsets.UTF_8);
+        }
+        Files.write(indexPath, bytes);
+    }
+
+    /**
+     * Removes a collection of filenames from the index, effectively shadowing/hiding these files. Does not update the
+     * data file, all data remains intact. Use {@link #compactBundle(Path, Path)} to make actual changes to the data
+     * file (and reduce its size). Modifies the file in place.
+     * @param indexPath the location of the corresponding index file
+     * @param filenamesToDrop the filenames to remove from the index file
+     * @throws IOException reading or writing failed
+     */
+    public static void unlinkFiles(Path indexPath, String... filenamesToDrop) throws IOException {
+        Set<String> set = Set.of(filenamesToDrop);
+        byte[] bytes;
+        try (Stream<String> lines = Files.lines(indexPath)) {
+            bytes = lines.filter(l -> !set.contains(l.split(FileBundle.INDEX_ENTRY_DELIMITER)[0]))
                     .collect(Collectors.joining(FileBundle.LINE_END, "", FileBundle.LINE_END))
                     .getBytes(StandardCharsets.UTF_8);
         }
