@@ -41,17 +41,39 @@ class FileBundleIOTest {
 
     @Test
     void whenUnlinkingFiles_thenIndexUpdatedAndDataFileNot() throws IOException {
-        Path resourceIndex = Paths.get("src/test/resources/").resolve("test.ffindex");
-        Path testIndex = Files.createTempFile("file-bundle-test", "test.ffindex");
-        Files.copy(resourceIndex, testIndex, StandardCopyOption.REPLACE_EXISTING);
-
         Path resourceData = Paths.get("src/test/resources/").resolve("test.data");
         Path testData = Files.createTempFile("file-bundle-test", "test.data");
         Files.copy(resourceData, testData, StandardCopyOption.REPLACE_EXISTING);
 
+        Path resourceIndex = Paths.get("src/test/resources/").resolve("test.ffindex");
+        Path testIndex = Files.createTempFile("file-bundle-test", "test.ffindex");
+        Files.copy(resourceIndex, testIndex, StandardCopyOption.REPLACE_EXISTING);
+
         FileBundleIO.unlinkFiles(testIndex, "a", "c", "not");
 
         assertArrayEquals(Files.readAllBytes(resourceData), Files.readAllBytes(testData), "Data file content should not change");
+
+        ReadableFileBundle fileBundle = FileBundleIO.openBundle(testData, testIndex).inReadOnlyMode();
+        assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
+        assertEquals("bb", Conversions.toString(fileBundle.readFile("b")));
+        assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("c"));
+        assertEquals("fooo\nfooo", Conversions.toString(fileBundle.readFile("foo")));
+    }
+
+    @Test
+    void whenCompactingDataFile_thenIndexAndDataFileUpdated() throws IOException {
+        Path resourceData = Paths.get("src/test/resources/").resolve("test.data");
+        Path testData = Files.createTempFile("file-bundle-test", "test.data");
+        Files.copy(resourceData, testData, StandardCopyOption.REPLACE_EXISTING);
+
+        Path resourceIndex = Paths.get("src/test/resources/").resolve("test.ffindex");
+        Path testIndex = Files.createTempFile("file-bundle-test", "test.ffindex");
+        Files.copy(resourceIndex, testIndex, StandardCopyOption.REPLACE_EXISTING);
+
+        FileBundleIO.unlinkFiles(testIndex, "a", "c", "not");
+        FileBundleIO.compactBundle(testData, testIndex);
+
+        assertArrayEquals(TestHelper.getBytes("compact.data"), Files.readAllBytes(testData), "Data file content should not change");
 
         ReadableFileBundle fileBundle = FileBundleIO.openBundle(testData, testIndex).inReadOnlyMode();
         assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));

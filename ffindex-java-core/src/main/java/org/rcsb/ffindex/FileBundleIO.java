@@ -142,34 +142,36 @@ public class FileBundleIO {
      * @throws IOException reading or writing failed
      */
     public static void compactBundle(Path dataPath, Path indexPath) throws IOException {
-        FileChannel originalData = new RandomAccessFile(dataPath.toFile(), "r").getChannel();
         Path updatedDataPath = dataPath.resolveSibling(dataPath.getFileName() + FileBundle.TMP_EXT);
-        FileChannel updatedData = new RandomAccessFile(updatedDataPath.toFile(), "rw").getChannel();
         Path updatedIndexPath = indexPath.resolveSibling(indexPath.getFileName() + FileBundle.TMP_EXT);
-        FileChannel updatedIndex = new RandomAccessFile(updatedIndexPath.toFile(), "rw").getChannel();
+        try (FileChannel originalData = new RandomAccessFile(dataPath.toFile(), "r").getChannel();
+             FileChannel updatedData = new RandomAccessFile(updatedDataPath.toFile(), "rw").getChannel();
+             FileChannel updatedIndex = new RandomAccessFile(updatedIndexPath.toFile(), "rw").getChannel()) {
+            // parse sparse entry list and sort by offset
+            List<Entry> entries = parseEntries(indexPath);
+            entries.sort(Comparator.comparingLong(Entry::getOffset));
 
-        // parse sparse entry list and sort by offset
-        List<Entry> entries = parseEntries(indexPath);
-        entries.sort(Comparator.comparingLong(Entry::getOffset));
+            long updatedOffset = 0L;
+            for (Entry entry : entries) {
+                String filename = entry.getFilename();
+                long originalOffset = entry.getOffset();
+                int length = entry.getLength();
 
-        for (Entry entry : entries) {
-            String filename = entry.getFilename();
-            long originalOffset = entry.getOffset();
-            int length = entry.getLength();
+                // move data -- optimally, this would use DirectByteBuffers -- however, there's no API to dispose them again
+                // and in tight loops the OS might exceed the limit of memory-mapped regions
+                ByteBuffer content = ByteBuffer.allocate(length);
+                originalData.read(content, originalOffset);
+                content.rewind();
+                updatedData.write(content);
 
-            // move data -- optimally, this would use DirectByteBuffers -- however, there's no API to dispose them again
-            // and in tight loops the OS might exceed the limit of memory-mapped regions
-            ByteBuffer content = ByteBuffer.allocate(length);
-            originalData.read(content, originalOffset);
-            updatedData.write(content);
-
-            // track new offset to index file
-            long updatedOffset = updatedData.position();
-            String line = filename + INDEX_ENTRY_DELIMITER +
-                    updatedOffset + INDEX_ENTRY_DELIMITER +
-                    length + FileBundle.LINE_END;
-            ByteBuffer indexLine = ByteBuffer.wrap(line.getBytes(StandardCharsets.UTF_8));
-            updatedIndex.write(indexLine);
+                // track new offset to index file
+                String line = filename + INDEX_ENTRY_DELIMITER +
+                        updatedOffset + INDEX_ENTRY_DELIMITER +
+                        length + FileBundle.LINE_END;
+                ByteBuffer indexLine = ByteBuffer.wrap(line.getBytes(StandardCharsets.UTF_8));
+                updatedIndex.write(indexLine);
+                updatedOffset += length;
+            }
         }
 
         // replace originals by tmp files
