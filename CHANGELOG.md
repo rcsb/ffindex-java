@@ -1,5 +1,11 @@
 # FFindex-java Changelog
 
+ffindex-java 0.2.0
+-------------
+### Added
+- `unlink` functionality to remove files from index
+- `compact` functionality to update data file after files were deleted from index file
+
 ffindex-java 0.1.2
 -------------
 ### Bug Fixes
