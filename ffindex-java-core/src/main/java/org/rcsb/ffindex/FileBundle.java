@@ -32,6 +32,10 @@ public interface FileBundle extends Closeable {
      * Delimiter in index entry lines.
      */
     String INDEX_ENTRY_DELIMITER = "\t";
+    /**
+     * Extension of temporary files.
+     */
+    String TMP_EXT = ".tmp";
 
     /**
      * Path to the data file.
