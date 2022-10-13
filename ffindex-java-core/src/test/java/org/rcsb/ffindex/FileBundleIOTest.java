@@ -94,6 +94,43 @@ class FileBundleIOTest {
         assertEquals(0, fileBundle.fileCount());
     }
 
+    @Test
+    void whenMergingBundlesWithDuplicates_thenIllegalStateExceptionThrown() throws IOException {
+        Path resourceData = Paths.get("src/test/resources/").resolve("test.data");
+        Path testData = Files.createTempFile("file-bundle-test", "test.data");
+        Files.copy(resourceData, testData, StandardCopyOption.REPLACE_EXISTING);
+
+        Path resourceIndex = Paths.get("src/test/resources/").resolve("test.ffindex");
+        Path testIndex = Files.createTempFile("file-bundle-test", "test.ffindex");
+        Files.copy(resourceIndex, testIndex, StandardCopyOption.REPLACE_EXISTING);
+
+        assertThrows(IllegalStateException.class, () -> FileBundleIO.mergeBundles(resourceData, resourceIndex, resourceData, resourceIndex));
+    }
+
+    @Test
+    void whenMergingBundles_thenFirstIsAppended() throws IOException {
+        Path resourceData1 = Paths.get("src/test/resources/").resolve("part1.data");
+        Path testData1 = Files.createTempFile("file-bundle-test", "part1.data");
+        Files.copy(resourceData1, testData1, StandardCopyOption.REPLACE_EXISTING);
+
+        Path resourceIndex1 = Paths.get("src/test/resources/").resolve("part1.ffindex");
+        Path testIndex1 = Files.createTempFile("file-bundle-test", "part1.ffindex");
+        Files.copy(resourceIndex1, testIndex1, StandardCopyOption.REPLACE_EXISTING);
+
+        Path resourceData2 = Paths.get("src/test/resources/").resolve("part2.data");
+        Path testData2 = Files.createTempFile("file-bundle-test", "part2.data");
+        Files.copy(resourceData2, testData2, StandardCopyOption.REPLACE_EXISTING);
+
+        Path resourceIndex2 = Paths.get("src/test/resources/").resolve("part2.ffindex");
+        Path testIndex2 = Files.createTempFile("file-bundle-test", "part2.ffindex");
+        Files.copy(resourceIndex2, testIndex2, StandardCopyOption.REPLACE_EXISTING);
+
+        FileBundleIO.mergeBundles(testData1, testIndex1, testData2, testIndex2);
+
+        assertArrayEquals(Files.readAllBytes(testData1), Files.readAllBytes(Paths.get("src/test/resources/").resolve("test.data")));
+        assertArrayEquals(Files.readAllBytes(testIndex1), Files.readAllBytes(Paths.get("src/test/resources/").resolve("test.ffindex")));
+    }
+
     boolean isSorted(List<String> collection) {
         if (collection.isEmpty() || collection.size() == 1) {
             return true;
