@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -18,10 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FileBundleIOTest {
     @Test
     void whenSortingIndexFile_thenBinarySearchIsSupported() throws IOException {
-        Path resourcePath = Paths.get("src/test/resources/").resolve("not-sorted.ffindex");
-        Path testPath = Files.createTempFile("file-bundle-test", "not-sorted.ffindex");
-
-        Files.copy(resourcePath, testPath, StandardCopyOption.REPLACE_EXISTING);
+        Path testPath = TestHelper.createTempFile("not-sorted.ffindex");
 
         List<String> original = Files.lines(testPath).collect(Collectors.toList());
         assertFalse(isSorted(original));
@@ -41,17 +36,12 @@ class FileBundleIOTest {
 
     @Test
     void whenUnlinkingFiles_thenIndexUpdatedAndDataFileNot() throws IOException {
-        Path resourceData = Paths.get("src/test/resources/").resolve("test.data");
-        Path testData = Files.createTempFile("file-bundle-test", "test.data");
-        Files.copy(resourceData, testData, StandardCopyOption.REPLACE_EXISTING);
-
-        Path resourceIndex = Paths.get("src/test/resources/").resolve("test.ffindex");
-        Path testIndex = Files.createTempFile("file-bundle-test", "test.ffindex");
-        Files.copy(resourceIndex, testIndex, StandardCopyOption.REPLACE_EXISTING);
+        Path testData = TestHelper.createTempFile("test.data");
+        Path testIndex = TestHelper.createTempFile("test.ffindex");
 
         FileBundleIO.unlinkFiles(testIndex, "a", "c", "not");
 
-        assertArrayEquals(Files.readAllBytes(resourceData), Files.readAllBytes(testData), "Data file content should not change");
+        assertArrayEquals(TestHelper.getBytes("test.data"), Files.readAllBytes(testData), "Data file content should not change");
 
         ReadableFileBundle fileBundle = FileBundleIO.openBundle(testData, testIndex).inReadOnlyMode();
         assertThrows(NoSuchFileException.class, () -> fileBundle.readFile("a"));
@@ -62,13 +52,8 @@ class FileBundleIOTest {
 
     @Test
     void whenCompactingDataFile_thenIndexAndDataFileUpdated() throws IOException {
-        Path resourceData = Paths.get("src/test/resources/").resolve("test.data");
-        Path testData = Files.createTempFile("file-bundle-test", "test.data");
-        Files.copy(resourceData, testData, StandardCopyOption.REPLACE_EXISTING);
-
-        Path resourceIndex = Paths.get("src/test/resources/").resolve("test.ffindex");
-        Path testIndex = Files.createTempFile("file-bundle-test", "test.ffindex");
-        Files.copy(resourceIndex, testIndex, StandardCopyOption.REPLACE_EXISTING);
+        Path testData = TestHelper.createTempFile("test.data");
+        Path testIndex = TestHelper.createTempFile("test.ffindex");
 
         FileBundleIO.unlinkFiles(testIndex, "a", "c", "not");
         FileBundleIO.compactBundle(testData, testIndex);
@@ -96,39 +81,23 @@ class FileBundleIOTest {
 
     @Test
     void whenMergingBundlesWithDuplicates_thenIllegalStateExceptionThrown() throws IOException {
-        Path resourceData = Paths.get("src/test/resources/").resolve("test.data");
-        Path testData = Files.createTempFile("file-bundle-test", "test.data");
-        Files.copy(resourceData, testData, StandardCopyOption.REPLACE_EXISTING);
+        Path testData = TestHelper.createTempFile("test.data");
+        Path testIndex = TestHelper.createTempFile("test.ffindex");
 
-        Path resourceIndex = Paths.get("src/test/resources/").resolve("test.ffindex");
-        Path testIndex = Files.createTempFile("file-bundle-test", "test.ffindex");
-        Files.copy(resourceIndex, testIndex, StandardCopyOption.REPLACE_EXISTING);
-
-        assertThrows(IllegalStateException.class, () -> FileBundleIO.mergeBundles(resourceData, resourceIndex, resourceData, resourceIndex));
+        assertThrows(IllegalStateException.class, () -> FileBundleIO.mergeBundles(testData, testIndex, testData, testIndex));
     }
 
     @Test
     void whenMergingBundles_thenFirstIsAppended() throws IOException {
-        Path resourceData1 = Paths.get("src/test/resources/").resolve("part1.data");
-        Path testData1 = Files.createTempFile("file-bundle-test", "part1.data");
-        Files.copy(resourceData1, testData1, StandardCopyOption.REPLACE_EXISTING);
-
-        Path resourceIndex1 = Paths.get("src/test/resources/").resolve("part1.ffindex");
-        Path testIndex1 = Files.createTempFile("file-bundle-test", "part1.ffindex");
-        Files.copy(resourceIndex1, testIndex1, StandardCopyOption.REPLACE_EXISTING);
-
-        Path resourceData2 = Paths.get("src/test/resources/").resolve("part2.data");
-        Path testData2 = Files.createTempFile("file-bundle-test", "part2.data");
-        Files.copy(resourceData2, testData2, StandardCopyOption.REPLACE_EXISTING);
-
-        Path resourceIndex2 = Paths.get("src/test/resources/").resolve("part2.ffindex");
-        Path testIndex2 = Files.createTempFile("file-bundle-test", "part2.ffindex");
-        Files.copy(resourceIndex2, testIndex2, StandardCopyOption.REPLACE_EXISTING);
+        Path testData1 = TestHelper.createTempFile("part1.data");
+        Path testIndex1 = TestHelper.createTempFile("part1.ffindex");
+        Path testData2 = TestHelper.createTempFile("part2.data");
+        Path testIndex2 = TestHelper.createTempFile("part2.ffindex");
 
         FileBundleIO.mergeBundles(testData1, testIndex1, testData2, testIndex2);
 
-        assertArrayEquals(Files.readAllBytes(testData1), Files.readAllBytes(Paths.get("src/test/resources/").resolve("test.data")));
-        assertArrayEquals(Files.readAllBytes(testIndex1), Files.readAllBytes(Paths.get("src/test/resources/").resolve("test.ffindex")));
+        assertArrayEquals(TestHelper.getBytes("test.data"), Files.readAllBytes(testData1), "data differs");
+        assertEquals(new String(TestHelper.getBytes("test.ffindex")), new String(Files.readAllBytes(testIndex1)), "index differs");
     }
 
     boolean isSorted(List<String> collection) {

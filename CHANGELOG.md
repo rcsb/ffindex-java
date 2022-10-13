@@ -3,8 +3,9 @@
 ffindex-java 0.2.0
 -------------
 ### Added
-- `unlink` functionality to remove files from index
-- `compact` functionality to update data file after files were deleted from index file
+- `unlinkFiles` functionality to remove files from index
+- `compactBundle` functionality to update data file after files were deleted from index file
+- `mergeBundles` to append one bundle by another
 
 ffindex-java 0.1.2
 -------------

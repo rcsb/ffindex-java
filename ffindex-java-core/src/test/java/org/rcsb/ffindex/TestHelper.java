@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,6 +34,12 @@ public class TestHelper {
         inputStream.close();
 
         return byteArray;
+    }
+
+    public static Path createTempFile(String localPath) throws IOException {
+        Path path = Files.createTempFile("file-bundle-tests", localPath);
+        Files.write(path, getBytes(localPath));
+        return path;
     }
 
     @Test

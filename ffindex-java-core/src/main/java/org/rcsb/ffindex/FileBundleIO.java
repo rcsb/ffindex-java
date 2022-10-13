@@ -12,13 +12,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.rcsb.ffindex.FileBundle.INDEX_ENTRY_DELIMITER;
+import static org.rcsb.ffindex.FileBundle.LINE_END;
 
 /**
  * IO operations on a bunch of files. FFindex-style.
@@ -191,6 +195,7 @@ public class FileBundleIO {
         }
     }
 
+    private static final Entry EMPTY_ENTRY = new Entry("", 0, 0);
     /**
      * Convenience class that represents one line of the index file.
      */
@@ -215,6 +220,37 @@ public class FileBundleIO {
 
         int getLength() {
             return length;
+        }
+    }
+
+    /**
+     * Merge two bundles. Takes the 1st bundle and appends it by all content from the 2nd bundle, for both data and
+     * index files. Will reject duplicates.
+     * @param dataPath data file of the bundle to append
+     * @param indexPath index file of the bundle to append
+     * @param additionsDataPath data file with additions - will not be manipulated
+     * @param additionsIndexPath index file with additions- will not be manipulated
+     */
+    public static void mergeBundles(Path dataPath, Path indexPath, Path additionsDataPath, Path additionsIndexPath) throws IOException {
+        List<Entry> originalEntries = parseEntries(indexPath);
+        List<Entry> additionalEntries = parseEntries(additionsIndexPath);
+        if (Stream.of(originalEntries, additionalEntries).flatMap(Collection::stream).map(Entry::getFilename).distinct().count() != originalEntries.size() + additionalEntries.size()) {
+            throw new IllegalStateException("There are duplicate files - won't merge");
+        }
+
+        // merge indices
+        Entry lastEntry = originalEntries.stream().max(Comparator.comparingLong(Entry::getOffset)).orElse(EMPTY_ENTRY);
+        long o = lastEntry.getOffset() + lastEntry.getLength();
+        byte[] indexAdditions = additionalEntries.stream()
+                .map(e -> e.getFilename() + INDEX_ENTRY_DELIMITER + (e.getOffset() + o) + INDEX_ENTRY_DELIMITER + e.getLength())
+                .collect(Collectors.joining(LINE_END, "", LINE_END))
+                .getBytes(StandardCharsets.UTF_8);
+        Files.write(indexPath, indexAdditions, StandardOpenOption.APPEND);
+
+        // merge data
+        try (FileChannel dataChannel = new RandomAccessFile(dataPath.toFile(), "rw").getChannel();
+             FileChannel additionsDataChannel = new RandomAccessFile(additionsDataPath.toFile(), "r").getChannel()) {
+            dataChannel.transferFrom(additionsDataChannel, dataChannel.size(), Long.MAX_VALUE);
         }
     }
 }

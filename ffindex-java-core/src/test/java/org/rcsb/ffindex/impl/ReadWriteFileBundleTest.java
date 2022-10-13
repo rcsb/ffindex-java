@@ -10,16 +10,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ReadWriteFileBundleTest {
     @Test
     void whenWritingDuplicates_thenIllegalStateExceptionThrown() throws IOException {
-        Path resourcePath = Paths.get("src/test/resources/");
-        Path dataPath = resourcePath.resolve("test.data");
-        Path indexPath = resourcePath.resolve("test.ffindex");
+        Path dataPath = TestHelper.createTempFile("test.data");
+        Path indexPath = TestHelper.createTempFile("test.ffindex");
 
         try (AppendableFileBundle fileBundle = FileBundleIO.openBundle(dataPath, indexPath).inReadWriteMode()) {
             ByteBuffer byteBuffer = Conversions.toByteBuffer("reject");
