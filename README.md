@@ -18,7 +18,7 @@ use up to 12 cores.
 | File System | 48 |
 | FFindex-java | 30 |
 
-## Write Times (JHM)
+## Write Times (JMH)
 | Approach | bundle 190,000 files [s] |
 | --- | --- |
 | tar | 57 |
